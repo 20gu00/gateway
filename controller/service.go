@@ -41,68 +41,73 @@ func ServiceRegister(group *gin.RouterGroup) {
 // @Param page_num query int true "当前页数"
 // @Success 200 {object} middleware.Response{data=dto.ServiceListOutput} "success"
 // @Router /service/list [get]
-func (service *ServiceController) ServiceList(c *gin.Context) {
-	params := &dto.ServiceListInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (service *ServiceController) ServiceList(ctx *gin.Context) {
+	in := &dto.ServiceListInput{}
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//从db中分页读取基本信息
 	serviceInfo := &dao.ServiceInfo{}
-	list, total, err := serviceInfo.PageList(c, tx, params)
+	serviceInfoList, total, err := serviceInfo.PageList(ctx, tx, in)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
 
-	//格式化输出信息
 	outList := []dto.ServiceListItemOutput{}
-	for _, listItem := range list {
-		serviceDetail, err := listItem.ServiceDetail(c, tx, &listItem)
+	for _, listItem := range serviceInfoList {
+		serviceDetail, err := listItem.ServiceDetail(ctx, tx, &listItem)
 		if err != nil {
-			middleware.ResponseError(c, 2003, err)
+			middleware.ResponseError(ctx, 2003, err)
 			return
 		}
-		//1、http后缀接入 clusterIP+clusterPort+path
-		//2、http域名接入 domain
-		//3、tcp、grpc接入 clusterIP+servicePort
-		serviceAddr := "unknow"
+
+		//1、http前缀接入 clusterIP:clusterPort+path 2、http域名接入 domain 3、tcp、grpc接入 clusterIP:servicePort
+		serviceAddr := "unknowServiceAddr"
+		//网关的ip,端口
 		clusterIP := lib.GetStringConf("base.cluster.cluster_ip")
 		clusterPort := lib.GetStringConf("base.cluster.cluster_port")
 		clusterSSLPort := lib.GetStringConf("base.cluster.cluster_ssl_port")
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP &&
-			serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL &&
-			serviceDetail.HTTPRule.NeedHttps == 1 {
+
+		//http类型,接入类型,是否开启https
+		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 1 {
 			serviceAddr = fmt.Sprintf("%s:%s%s", clusterIP, clusterSSLPort, serviceDetail.HTTPRule.Rule)
 		}
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP &&
-			serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL &&
-			serviceDetail.HTTPRule.NeedHttps == 0 {
+
+		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 0 {
 			serviceAddr = fmt.Sprintf("%s:%s%s", clusterIP, clusterPort, serviceDetail.HTTPRule.Rule)
 		}
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP &&
-			serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypeDomain {
+
+		//域名
+		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypeDomain {
 			serviceAddr = serviceDetail.HTTPRule.Rule
 		}
+
+		//
 		if serviceDetail.Info.LoadType == common.LoadTypeTCP {
 			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.TCPRule.Port)
 		}
+
 		if serviceDetail.Info.LoadType == common.LoadTypeGRPC {
 			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.GRPCRule.Port)
 		}
+
+		//实际的工作负载
 		ipList := serviceDetail.LoadBalance.GetIPListByModel()
-		counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + listItem.ServiceName)
+		//流量统计,统计这个服务的流量
+		counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + listItem.ServiceName) //服务流量统计前缀+服务名称
 		if err != nil {
-			middleware.ResponseError(c, 2004, err)
+			middleware.ResponseError(ctx, 2004, err)
 			return
 		}
+
 		outItem := dto.ServiceListItemOutput{
 			ID:          listItem.ID,
 			LoadType:    listItem.LoadType,
@@ -119,7 +124,7 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 		Total: total,
 		List:  outList,
 	}
-	middleware.ResponseSuccess(c, out)
+	middleware.ResponseSuccess(ctx, out)
 }
 
 // ServiceDelete godoc

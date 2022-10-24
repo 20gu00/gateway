@@ -36,7 +36,7 @@
     cluster_ssl_port="4433"
 
 [swagger]
-    title="go_gateway swagger API"
-    desc="This is a sample server celler server."
+    title="ggateway swagger API"
+    desc="后台管理功能的swagger文档"
     host="127.0.0.1:8880"
     base_path=""

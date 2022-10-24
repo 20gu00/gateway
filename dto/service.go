@@ -82,7 +82,7 @@ func (param *ServiceDeleteInput) BindValidParam(c *gin.Context) error {
 
 type ServiceListInput struct {
 	Info     string `json:"info" form:"info" comment:"关键词" example:"" validate:""`                      //关键词
-	PageNo   int    `json:"page_no" form:"page_no" comment:"页数" example:"1" validate:"required"`        //页数
+	PageNum  int    `json:"page_num" form:"page_num" comment:"页数" example:"1" validate:"required"`      //页数
 	PageSize int    `json:"page_size" form:"page_size" comment:"每页条数" example:"20" validate:"required"` //每页条数
 }
 

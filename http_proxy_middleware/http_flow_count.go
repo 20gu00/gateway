@@ -25,7 +25,7 @@ func HTTPFlowCountMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		totalCounter.Increase()
+		totalCounter.Increase() //累加
 
 		//dayCount, _ := totalCounter.GetDayData(time.Now())
 		//fmt.Printf("totalCounter qps:%v,dayCount:%v", totalCounter.QPS, dayCount)

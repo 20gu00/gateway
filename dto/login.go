@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//session信息
 type AdminSessionInfo struct {
 	ID        int       `json:"id"`
 	UserName  string    `json:"user_name"`

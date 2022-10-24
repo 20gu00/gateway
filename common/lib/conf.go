@@ -99,7 +99,7 @@ func InitBaseConf(path string) error {
 		if ConfBase.Base.TimeLocation != "" {
 			ConfBase.TimeLocation = ConfBase.Base.TimeLocation
 		} else {
-			ConfBase.TimeLocation = "Asia/Chongqing"
+			ConfBase.TimeLocation = "Asia/Shanghai"
 		}
 	}
 	if ConfBase.Log.Level == "" {

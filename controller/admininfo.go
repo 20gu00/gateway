@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/20gu00/gateway/common"
 	"github.com/20gu00/gateway/common/lib"
@@ -30,15 +31,17 @@ func AdminRegister(group *gin.RouterGroup) {
 // @Success 200 {object} middleware.Response{data=dto.AdminInfoOutput} "success"
 // @Router /admin/admin_info [get]
 func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
-	sess := sessions.Default(c)
-	sessInfo := sess.Get(common.SessionKey)
+	session := sessions.Default(c)                //新建Session
+	sessionInfo := session.Get(common.SessionKey) //从context中获取session的key对应的value
+
+	//新建一个管理员的session信息的结构体,将上下文中拿到的sessioninfo解码放入adminsessioninfo中
 	adminSessionInfo := &dto.AdminSessionInfo{}
-	if err := json.Unmarshal([]byte(fmt.Sprint(sessInfo)), adminSessionInfo); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprint(sessionInfo)), adminSessionInfo); err != nil {
 		middleware.ResponseError(c, 2000, err)
 		return
 	}
 
-	out := &dto.AdminInfoOutput{
+	output := &dto.AdminInfoOutput{
 		ID:           adminSessionInfo.ID,
 		Name:         adminSessionInfo.UserName,
 		LoginTime:    adminSessionInfo.LoginTime,
@@ -46,7 +49,8 @@ func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 		Introduction: "admin超管",
 		Roles:        []string{"admin"},
 	}
-	middleware.ResponseSuccess(c, out)
+	//成功响应,数据在context中传输,有处理响应的中间件ResponseSuccess包装resp响应请求
+	middleware.ResponseSuccess(c, output)
 }
 
 // ChangePwd godoc
@@ -60,22 +64,21 @@ func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /admin/change_pwd [post]
 func (adminlogin *AdminController) ChangePwd(c *gin.Context) {
-	params := &dto.ChangePwdInput{}
-	if err := params.BindValidParam(c); err != nil {
+	in := &dto.ChangePwdInput{}
+	if err := in.BindValidParam(c); err != nil {
 		middleware.ResponseError(c, 2000, err)
 		return
 	}
 
-	//session读取用户信息到结构体
-	sess := sessions.Default(c)
-	sessInfo := sess.Get(common.SessionKey)
+	//修改密码逻辑,需要用户已经登录,能获取用户信息(获取session)说明用户处于登录状态
+	session := sessions.Default(c)
+	sessionInfo := session.Get(common.SessionKey)
 	adminSessionInfo := &dto.AdminSessionInfo{}
-	if err := json.Unmarshal([]byte(fmt.Sprint(sessInfo)), adminSessionInfo); err != nil {
-		middleware.ResponseError(c, 2000, err)
+	if err := json.Unmarshal([]byte(fmt.Sprint(sessionInfo)), adminSessionInfo); err != nil {
+		middleware.ResponseError(c, 2000, errors.New("修改密码接口使用报错,确保用户已经登录"))
 		return
 	}
 
-	//从数据库中读取 adminInfo
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
 		middleware.ResponseError(c, 2001, err)
@@ -88,14 +91,14 @@ func (adminlogin *AdminController) ChangePwd(c *gin.Context) {
 		return
 	}
 
-	//生成新密码 saltPassword
-	saltPassword := common.SaltPassword(adminInfo.Salt, params.Password)
+	saltPassword := common.SaltPassword(adminInfo.Salt, in.Password)
 	adminInfo.Password = saltPassword
 
-	//执行数据保存
+	//数据写入数据库
 	if err := adminInfo.Save(c, tx); err != nil {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, "")
+
+	middleware.ResponseSuccess(c, "修改密码成功")
 }

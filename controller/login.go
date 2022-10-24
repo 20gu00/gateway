@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/20gu00/gateway/common"
 	"github.com/20gu00/gateway/common/lib"
 	"github.com/20gu00/gateway/dao"
@@ -30,43 +31,50 @@ func AdminLoginRegister(group *gin.RouterGroup) {
 // @Param body body dto.AdminLoginInput true "body"
 // @Success 200 {object} middleware.Response{data=dto.AdminLoginOutput} "success"
 // @Router /admin_login/login [post]
-func (adminlogin *AdminLoginController) Login(c *gin.Context) {
-	params := &dto.AdminLoginInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (a *AdminLoginController) Login(ctx *gin.Context) {
+	in := &dto.AdminLoginInput{}
+	//参数校验
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
 	//admininfo.salt + params.Password sha256 => saltPassword
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
-		return
-	}
-	admin := &dao.Admin{}
-	admin, err = admin.LoginCheck(c, tx, params)
-	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//设置session
-	sessInfo := &dto.AdminSessionInfo{
+	admin := &dao.Admin{}
+	admin, err = admin.LoginCheck(ctx, tx, in)
+	if err != nil {
+		middleware.ResponseError(ctx, 2002, err)
+		return
+	}
+
+	//登录成功的用户(管理员)设置session(服务端保存)
+	sessionInfo := &dto.AdminSessionInfo{
+		//使用管理员的信息
 		ID:        admin.Id,
 		UserName:  admin.UserName,
 		LoginTime: time.Now(),
 	}
-	sessBts, err := json.Marshal(sessInfo)
+	sessionBts, err := json.Marshal(sessionInfo) //json编码
 	if err != nil {
-		middleware.ResponseError(c, 2003, err)
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
-	sess := sessions.Default(c)
-	sess.Set(common.SessionKey, string(sessBts))
-	sess.Save()
 
-	out := &dto.AdminLoginOutput{Token: admin.UserName}
-	middleware.ResponseSuccess(c, out)
+	session := sessions.Default(ctx)                   //gin官方session
+	session.Set(common.SessionKey, string(sessionBts)) //存入sessioninfo进行json编码后的字符串,sessioninfo也是根据serviceinfo建立
+	if err = session.Save(); err != nil {              //保存
+		middleware.ResponseError(ctx, 2004, errors.New("登录后创建session失败"))
+		return
+	}
+	//这里也可以直接用各方发生token
+	output := &dto.AdminLoginOutput{Token: admin.UserName} //返回个简单的token
+	middleware.ResponseSuccess(ctx, output)
 }
 
 // LoginOut godoc
@@ -78,9 +86,11 @@ func (adminlogin *AdminLoginController) Login(c *gin.Context) {
 // @Produce  json
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /admin_login/logout [get]
-func (adminlogin *AdminLoginController) LoginOut(c *gin.Context) {
-	sess := sessions.Default(c)
-	sess.Delete(common.SessionKey)
-	sess.Save()
-	middleware.ResponseSuccess(c, "")
+func (adminlogin *AdminLoginController) LoginOut(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	session.Delete(common.SessionKey)
+	if err := session.Save(); err != nil {
+		middleware.ResponseError(ctx, 2000, errors.New("退出后保存删除session操作失败"))
+	}
+	middleware.ResponseSuccess(ctx, "")
 }

@@ -10,10 +10,11 @@ import (
 
 func SaltPassword(salt, password string) string {
 	s1 := sha256.New()
-	s1.Write([]byte(password))
-	str1 := fmt.Sprintf("%x", s1.Sum(nil))
+	s1.Write([]byte(password))             //sha256 passwd
+	str1 := fmt.Sprintf("%x", s1.Sum(nil)) //Sum拿出加密的hash,十六进制输出
+
 	s2 := sha256.New()
-	s2.Write([]byte(str1 + salt))
+	s2.Write([]byte(str1 + salt)) //sha256 salt+sha256passwd
 	return fmt.Sprintf("%x", s2.Sum(nil))
 }
 

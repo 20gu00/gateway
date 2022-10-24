@@ -9,7 +9,7 @@ import (
 )
 
 type ServiceInfo struct {
-	ID          int64     `json:"id" gorm:"primary_key"`
+	ID          int64     `json:"id" gorm:"primary_key" description:"service基本表id"`
 	LoadType    int       `json:"load_type" gorm:"column:load_type" description:"负载类型 0=http 1=tcp 2=grpc"`
 	ServiceName string    `json:"service_name" gorm:"column:service_name" description:"服务名称"`
 	ServiceDesc string    `json:"service_desc" gorm:"column:service_desc" description:"服务描述"`
@@ -22,6 +22,8 @@ func (t *ServiceInfo) TableName() string {
 	return "service_info"
 }
 
+//这里也可以直接使用调用者作为参数
+//serviceinfo调用的并使用serviceinfo的id进行关联其他表,组装成一个跟详细的服务信息表
 func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceDetail, error) {
 	if search.ServiceName == "" {
 		info, err := t.Find(c, tx, search)
@@ -76,20 +78,26 @@ func (t *ServiceInfo) GroupByLoadType(c *gin.Context, tx *gorm.DB) ([]dto.Market
 	return list, nil
 }
 
-func (t *ServiceInfo) PageList(c *gin.Context, tx *gorm.DB, param *dto.ServiceListInput) ([]ServiceInfo, int64, error) {
-	total := int64(0)
+//按页列出serviceinfo
+func (t *ServiceInfo) PageList(ctx *gin.Context, tx *gorm.DB, in *dto.ServiceListInput) ([]ServiceInfo, int64, error) {
+	total := int64(0) //列出的service的总条数
 	list := []ServiceInfo{}
-	offset := (param.PageNo - 1) * param.PageSize
+	offset := (in.PageNum - 1) * in.PageSize //偏移量
 
-	query := tx.SetCtx(common.GetGinTraceContext(c))
-	query = query.Table(t.TableName()).Where("is_delete=0")
-	if param.Info != "" {
-		query = query.Where("(service_name like ? or service_desc like ?)", "%"+param.Info+"%", "%"+param.Info+"%")
+	//*DB.SetCtx,设置key value进上下文
+	//可以从gin的context的上下文中获取数据库的日志
+	query := tx.SetCtx(common.GetGinTraceContext(ctx)).Table(t.TableName()).Where("is_delete=0")
+
+	if in.Info != "" {
+		//根据服务名称和服务描述模糊查询
+		query = query.Where("(service_name like ? or service_desc like ?)", "%"+in.Info+"%", "%"+in.Info+"%")
 	}
-	if err := query.Limit(param.PageSize).Offset(offset).Order("id desc").Find(&list).Error; err != nil && err != gorm.ErrRecordNotFound {
+
+	//limit 10  limit 1,10  asc升 desc降
+	if err := query.Limit(in.PageSize).Offset(offset).Order("id desc").Find(&list).Error; err != nil && err != gorm.ErrRecordNotFound { //数据库查找不到数据也是一种错误
 		return nil, 0, err
 	}
-	query.Limit(param.PageSize).Offset(offset).Count(&total)
+	query.Limit(in.PageSize).Offset(offset).Count(&total)
 	return list, total, nil
 }
 

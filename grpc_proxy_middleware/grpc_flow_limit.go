@@ -20,6 +20,7 @@ func GrpcFlowLimitMiddleware(serviceDetail *dao.ServiceDetail) func(srv interfac
 			if err != nil {
 				return err
 			}
+			//Allow()判断当前是否能拿到token,拿不到那就是被限流了  Wait()阻塞等待拿到token  Reserve()返回个预估的等待时间,再去取token  (拿到token也就是说该请求可以进入可以被处理,没有被限速限流)
 			if !serviceLimiter.Allow() {
 				return errors.New(fmt.Sprintf("service flow limit %v", serviceDetail.AccessControl.ServiceFlowLimit))
 			}

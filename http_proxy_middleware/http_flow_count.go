@@ -29,7 +29,7 @@ func HTTPFlowCountMiddleware() gin.HandlerFunc {
 
 		//dayCount, _ := totalCounter.GetDayData(time.Now())
 		//fmt.Printf("totalCounter qps:%v,dayCount:%v", totalCounter.QPS, dayCount)
-		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.Info.ServiceName)
+		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
 		if err != nil {
 			middleware.ResponseError(c, 4001, err)
 			c.Abort()

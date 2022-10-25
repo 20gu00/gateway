@@ -14,7 +14,7 @@ func GrpcFlowCountMiddleware(serviceDetail *dao.ServiceDetail) func(srv interfac
 			return err
 		}
 		totalCounter.Increase()
-		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.Info.ServiceName)
+		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
 		if err != nil {
 			return err
 		}

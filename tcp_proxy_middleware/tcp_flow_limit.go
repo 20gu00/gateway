@@ -19,7 +19,7 @@ func TCPFlowLimitMiddleware() func(c *TcpSliceRouterContext) {
 
 		if serviceDetail.AccessControl.ServiceFlowLimit != 0 {
 			serviceLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName,
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName,
 				float64(serviceDetail.AccessControl.ServiceFlowLimit))
 			if err != nil {
 				c.conn.Write([]byte(err.Error()))
@@ -40,7 +40,7 @@ func TCPFlowLimitMiddleware() func(c *TcpSliceRouterContext) {
 		}
 		if serviceDetail.AccessControl.ClientIPFlowLimit > 0 {
 			clientLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName+"_"+clientIP,
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName+"_"+clientIP,
 				float64(serviceDetail.AccessControl.ClientIPFlowLimit))
 			if err != nil {
 				c.conn.Write([]byte(err.Error()))

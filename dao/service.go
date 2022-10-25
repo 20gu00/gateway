@@ -12,7 +12,7 @@ import (
 )
 
 type ServiceDetail struct {
-	Info          *ServiceInfo   `json:"info" description:"service的基本信息"`
+	ServiceInfo   *ServiceInfo   `json:"serviceInfo" description:"service的基本信息"`
 	HTTPRule      *HttpRule      `json:"http_rule" description:"http_rule表"`
 	TCPRule       *TcpRule       `json:"tcp_rule" description:"tcp_rule表"`
 	GRPCRule      *GrpcRule      `json:"grpc_rule" description:"grpc_rule表"`
@@ -50,7 +50,7 @@ func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
 	list := []*ServiceDetail{}
 	for _, serverItem := range s.ServiceSlice {
 		tempItem := serverItem
-		if tempItem.Info.LoadType == common.LoadTypeTCP {
+		if tempItem.ServiceInfo.LoadType == common.LoadTypeTCP {
 			list = append(list, tempItem)
 		}
 	}
@@ -62,7 +62,7 @@ func (s *ServiceManager) GetGrpcServiceList() []*ServiceDetail {
 	list := []*ServiceDetail{}
 	for _, serverItem := range s.ServiceSlice {
 		tempItem := serverItem
-		if tempItem.Info.LoadType == common.LoadTypeGRPC {
+		if tempItem.ServiceInfo.LoadType == common.LoadTypeGRPC {
 			list = append(list, tempItem)
 		}
 	}
@@ -78,7 +78,7 @@ func (s *ServiceManager) HTTPAccessMode(ctx *gin.Context) (*ServiceDetail, error
 	path := ctx.Request.URL.Path
 	for _, serviceItem := range s.ServiceSlice {
 		//负载均衡类型判断请求的类型
-		if serviceItem.Info.LoadType != common.LoadTypeHTTP {
+		if serviceItem.ServiceInfo.LoadType != common.LoadTypeHTTP {
 			continue //这里处理的是http,不是http就继续下一个循环
 		}
 

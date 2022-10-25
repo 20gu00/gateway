@@ -24,49 +24,62 @@ func (t *ServiceInfo) TableName() string {
 
 //这里也可以直接使用调用者作为参数
 //serviceinfo调用的并使用serviceinfo的id进行关联其他表,组装成一个跟详细的服务信息表
-func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceDetail, error) {
+func (s *ServiceInfo) ServiceDetail(ctx *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceDetail, error) {
+	//一般调用这个方法的前会通过id拿到相应的serviceinfo信息
 	if search.ServiceName == "" {
-		info, err := t.Find(c, tx, search)
+		serviceInfo, err := s.Find(ctx, tx, search)
 		if err != nil {
 			return nil, err
 		}
-		search = info
+		search = serviceInfo
 	}
-	httpRule := &HttpRule{ServiceID: search.ID}
-	httpRule, err := httpRule.Find(c, tx, httpRule)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	tcpRule := &TcpRule{ServiceID: search.ID}
-	tcpRule, err = tcpRule.Find(c, tx, tcpRule)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	grpcRule := &GrpcRule{ServiceID: search.ID}
-	grpcRule, err = grpcRule.Find(c, tx, grpcRule)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	accessControl := &AccessControl{ServiceID: search.ID}
-	accessControl, err = accessControl.Find(c, tx, accessControl)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	loadBalance := &LoadBalance{ServiceID: search.ID}
-	loadBalance, err = loadBalance.Find(c, tx, loadBalance)
+
+	//根据基本表的id查询多张表
+
+	//service_tcp_rule
+	tcpSerach := &TcpRule{ServiceID: search.ID}
+	tcpresult, err := tcpSerach.Find(ctx, tx, tcpSerach)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 
-	detail := &ServiceDetail{
-		Info:          search,
-		HTTPRule:      httpRule,
-		TCPRule:       tcpRule,
-		GRPCRule:      grpcRule,
-		LoadBalance:   loadBalance,
-		AccessControl: accessControl,
+	//service_access_control
+	accessControlSearch := &AccessControl{ServiceID: search.ID}
+	accessControlResult, err := accessControlSearch.Find(ctx, tx, accessControlSearch)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
 	}
-	return detail, nil
+
+	//service_http_rule
+	httpSearch := &HttpRule{ServiceID: search.ID}
+	httpResult, err := httpSearch.Find(ctx, tx, httpSearch)
+	if err != nil && err != gorm.ErrRecordNotFound { //数据查询不到也是当成一种err,要处理的是数据查询操作出错而不是查不到相应的数据
+		return nil, err
+	}
+
+	//service_grpc_rule
+	grpcSearch := &GrpcRule{ServiceID: search.ID}
+	grpcResult, err := grpcSearch.Find(ctx, tx, grpcSearch)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	loadBalanceSearch := &LoadBalance{ServiceID: search.ID}
+	loadBalanceResult, err := loadBalanceSearch.Find(ctx, tx, loadBalanceSearch)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	//组装成servicedetail
+	serviceDetail := &ServiceDetail{
+		ServiceInfo:   search,
+		HTTPRule:      httpResult,
+		TCPRule:       tcpresult,
+		GRPCRule:      grpcResult,
+		LoadBalance:   loadBalanceResult,
+		AccessControl: accessControlResult,
+	}
+	return serviceDetail, nil
 }
 
 func (t *ServiceInfo) GroupByLoadType(c *gin.Context, tx *gorm.DB) ([]dto.MarketServiceStatItemOutput, error) {
@@ -101,13 +114,13 @@ func (t *ServiceInfo) PageList(ctx *gin.Context, tx *gorm.DB, in *dto.ServiceLis
 	return list, total, nil
 }
 
-func (t *ServiceInfo) Find(c *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceInfo, error) {
-	out := &ServiceInfo{}
-	err := tx.SetCtx(common.GetGinTraceContext(c)).Where(search).Find(out).Error
+func (s *ServiceInfo) Find(ctx *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceInfo, error) {
+	result := &ServiceInfo{}
+	err := tx.SetCtx(common.GetGinTraceContext(ctx)).Where(search).Find(result).Error
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	return result, nil
 }
 
 func (t *ServiceInfo) Save(c *gin.Context, tx *gorm.DB) error {

@@ -20,7 +20,7 @@ func HTTPFlowLimitMiddleware() gin.HandlerFunc {
 		serviceDetail := serverInterface.(*dao.ServiceDetail)
 		if serviceDetail.AccessControl.ServiceFlowLimit != 0 {
 			serviceLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName,
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName,
 				float64(serviceDetail.AccessControl.ServiceFlowLimit))
 			if err != nil {
 				middleware.ResponseError(c, 5001, err)
@@ -36,7 +36,7 @@ func HTTPFlowLimitMiddleware() gin.HandlerFunc {
 
 		if serviceDetail.AccessControl.ClientIPFlowLimit > 0 {
 			clientLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName+"_"+c.ClientIP(),
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName+"_"+c.ClientIP(),
 				float64(serviceDetail.AccessControl.ClientIPFlowLimit))
 			if err != nil {
 				middleware.ResponseError(c, 5003, err)

@@ -82,7 +82,7 @@ func init() {
 
 func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
 	for _, lbrItem := range lbr.LoadBanlanceSlice {
-		if lbrItem.ServiceName == service.Info.ServiceName {
+		if lbrItem.ServiceName == service.ServiceInfo.ServiceName {
 			return lbrItem.LoadBanlance, nil
 		}
 	}
@@ -90,7 +90,7 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	if service.HTTPRule.NeedHttps == 1 {
 		schema = "https://"
 	}
-	if service.Info.LoadType == common.LoadTypeTCP || service.Info.LoadType == common.LoadTypeGRPC {
+	if service.ServiceInfo.LoadType == common.LoadTypeTCP || service.ServiceInfo.LoadType == common.LoadTypeGRPC {
 		schema = ""
 	}
 	ipList := service.LoadBalance.GetIPListByModel()
@@ -109,13 +109,13 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	//save to map and slice
 	lbItem := &LoadBalancerItem{
 		LoadBanlance: lb,
-		ServiceName:  service.Info.ServiceName,
+		ServiceName:  service.ServiceInfo.ServiceName,
 	}
 	lbr.LoadBanlanceSlice = append(lbr.LoadBanlanceSlice, lbItem)
 
 	lbr.Locker.Lock()
 	defer lbr.Locker.Unlock()
-	lbr.LoadBanlanceMap[service.Info.ServiceName] = lbItem
+	lbr.LoadBanlanceMap[service.ServiceInfo.ServiceName] = lbItem
 	return lb, nil
 }
 
@@ -146,7 +146,7 @@ func init() {
 
 func (t *Transportor) GetTrans(service *ServiceDetail) (*http.Transport, error) {
 	for _, transItem := range t.TransportSlice {
-		if transItem.ServiceName == service.Info.ServiceName {
+		if transItem.ServiceName == service.ServiceInfo.ServiceName {
 			return transItem.Trans, nil
 		}
 	}
@@ -181,11 +181,11 @@ func (t *Transportor) GetTrans(service *ServiceDetail) (*http.Transport, error) 
 	//save to map and slice
 	transItem := &TransportItem{
 		Trans:       trans,
-		ServiceName: service.Info.ServiceName,
+		ServiceName: service.ServiceInfo.ServiceName,
 	}
 	t.TransportSlice = append(t.TransportSlice, transItem)
 	t.Locker.Lock()
 	defer t.Locker.Unlock()
-	t.TransportMap[service.Info.ServiceName] = transItem
+	t.TransportMap[service.ServiceInfo.ServiceName] = transItem
 	return trans, nil
 }

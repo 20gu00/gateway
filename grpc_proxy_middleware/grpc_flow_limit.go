@@ -15,7 +15,7 @@ func GrpcFlowLimitMiddleware(serviceDetail *dao.ServiceDetail) func(srv interfac
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if serviceDetail.AccessControl.ServiceFlowLimit != 0 {
 			serviceLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName,
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName,
 				float64(serviceDetail.AccessControl.ServiceFlowLimit))
 			if err != nil {
 				return err
@@ -34,7 +34,7 @@ func GrpcFlowLimitMiddleware(serviceDetail *dao.ServiceDetail) func(srv interfac
 		clientIP := peerAddr[0:addrPos]
 		if serviceDetail.AccessControl.ClientIPFlowLimit > 0 {
 			clientLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowServicePrefix+serviceDetail.Info.ServiceName+"_"+clientIP,
+				common.FlowServicePrefix+serviceDetail.ServiceInfo.ServiceName+"_"+clientIP,
 				float64(serviceDetail.AccessControl.ClientIPFlowLimit))
 			if err != nil {
 				return err

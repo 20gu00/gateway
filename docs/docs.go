@@ -1419,7 +1419,7 @@ type swaggerInfo struct {
 	Description string
 }
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it
+// SwaggerInfo holds exported Swagger ServiceInfo so clients can modify it
 var SwaggerInfo swaggerInfo
 
 type s struct{}

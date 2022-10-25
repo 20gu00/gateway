@@ -41,7 +41,7 @@ func ServiceRegister(group *gin.RouterGroup) {
 // @Param page_num query int true "当前页数"
 // @Success 200 {object} middleware.Response{data=dto.ServiceListOutput} "success"
 // @Router /service/list [get]
-func (service *ServiceController) ServiceList(ctx *gin.Context) {
+func (s *ServiceController) ServiceList(ctx *gin.Context) {
 	in := &dto.ServiceListInput{}
 	if err := in.BindValidParam(ctx); err != nil {
 		middleware.ResponseError(ctx, 2000, err)
@@ -77,25 +77,25 @@ func (service *ServiceController) ServiceList(ctx *gin.Context) {
 		clusterSSLPort := lib.GetStringConf("base.cluster.cluster_ssl_port")
 
 		//http类型,接入类型,是否开启https
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 1 {
+		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 1 {
 			serviceAddr = fmt.Sprintf("%s:%s%s", clusterIP, clusterSSLPort, serviceDetail.HTTPRule.Rule)
 		}
 
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 0 {
+		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypePrefixURL && serviceDetail.HTTPRule.NeedHttps == 0 {
 			serviceAddr = fmt.Sprintf("%s:%s%s", clusterIP, clusterPort, serviceDetail.HTTPRule.Rule)
 		}
 
 		//域名
-		if serviceDetail.Info.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypeDomain {
+		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeHTTP && serviceDetail.HTTPRule.RuleType == common.HTTPRuleTypeDomain {
 			serviceAddr = serviceDetail.HTTPRule.Rule
 		}
 
 		//
-		if serviceDetail.Info.LoadType == common.LoadTypeTCP {
+		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeTCP {
 			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.TCPRule.Port)
 		}
 
-		if serviceDetail.Info.LoadType == common.LoadTypeGRPC {
+		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeGRPC {
 			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.GRPCRule.Port)
 		}
 
@@ -137,32 +137,31 @@ func (service *ServiceController) ServiceList(ctx *gin.Context) {
 // @Param id query string true "服务ID"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/delete [get]
-func (service *ServiceController) ServiceDelete(c *gin.Context) {
-	params := &dto.ServiceDeleteInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (s *ServiceController) ServiceDelete(ctx *gin.Context) {
+	in := &dto.ServiceDeleteInput{}
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//读取基本信息
-	serviceInfo := &dao.ServiceInfo{ID: params.ID}
-	serviceInfo, err = serviceInfo.Find(c, tx, serviceInfo)
+	serviceInfo := &dao.ServiceInfo{ID: in.ID}
+	serviceInfo, err = serviceInfo.Find(ctx, tx, serviceInfo)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
-	serviceInfo.IsDelete = 1
-	if err := serviceInfo.Save(c, tx); err != nil {
-		middleware.ResponseError(c, 2003, err)
+	serviceInfo.IsDelete = 1 //软删除
+	if err := serviceInfo.Save(ctx, tx); err != nil {
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "service删除成功")
 }
 
 // ServiceDetail godoc
@@ -175,32 +174,35 @@ func (service *ServiceController) ServiceDelete(c *gin.Context) {
 // @Param id query string true "服务ID"
 // @Success 200 {object} middleware.Response{data=dao.ServiceDetail} "success"
 // @Router /service/detail [get]
-func (service *ServiceController) ServiceDetail(c *gin.Context) {
-	params := &dto.ServiceDeleteInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (s *ServiceController) ServiceDetail(ctx *gin.Context) {
+	in := &dto.ServiceDeleteInput{}
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
 	//读取基本信息
-	serviceInfo := &dao.ServiceInfo{ID: params.ID}
-	serviceInfo, err = serviceInfo.Find(c, tx, serviceInfo)
+	serviceInfo := &dao.ServiceInfo{ID: in.ID}
+	serviceInfo, err = serviceInfo.Find(ctx, tx, serviceInfo)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
-	serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
+
+	//通过serviceinfo信息去夺标查询,拿到servicedetail
+	serviceDetail, err := serviceInfo.ServiceDetail(ctx, tx, serviceInfo)
 	if err != nil {
-		middleware.ResponseError(c, 2003, err)
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, serviceDetail)
+
+	middleware.ResponseSuccess(ctx, serviceDetail)
 }
 
 // ServiceStat godoc
@@ -233,7 +235,7 @@ func (service *ServiceController) ServiceStat(c *gin.Context) {
 		return
 	}
 
-	counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.Info.ServiceName)
+	counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
 	if err != nil {
 		middleware.ResponseError(c, 2004, err)
 		return
@@ -402,7 +404,7 @@ func (service *ServiceController) ServiceUpdateHTTP(c *gin.Context) {
 		return
 	}
 
-	info := serviceDetail.Info
+	info := serviceDetail.ServiceInfo
 	info.ServiceDesc = params.ServiceDesc
 	if err := info.Save(c, tx); err != nil {
 		tx.Rollback()
@@ -587,7 +589,7 @@ func (admin *ServiceController) ServiceUpdateTcp(c *gin.Context) {
 		return
 	}
 
-	info := detail.Info
+	info := detail.ServiceInfo
 	info.ServiceDesc = params.ServiceDesc
 	if err := info.Save(c, tx); err != nil {
 		tx.Rollback()
@@ -781,7 +783,7 @@ func (admin *ServiceController) ServiceUpdateGrpc(c *gin.Context) {
 		return
 	}
 
-	info := detail.Info
+	info := detail.ServiceInfo
 	info.ServiceDesc = params.ServiceDesc
 	if err := info.Save(c, tx); err != nil {
 		tx.Rollback()

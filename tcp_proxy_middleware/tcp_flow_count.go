@@ -24,7 +24,7 @@ func TCPFlowCountMiddleware() func(c *TcpSliceRouterContext) {
 		}
 		totalCounter.Increase()
 
-		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.Info.ServiceName)
+		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
 		if err != nil {
 			c.conn.Write([]byte(err.Error()))
 			c.Abort()

@@ -39,7 +39,7 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 
 	//更改内容
 	modifyFunc := func(resp *http.Response) error {
-		if strings.Contains(resp.Header.Get("Connection"), "Upgrade") {
+		if strings.Contains(resp.Header.Get("Connection"), "Upgrade") { //判断Upgrade是否在connection中,协议升级,ws
 			return nil
 		}
 

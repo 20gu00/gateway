@@ -48,7 +48,7 @@ func NewRedisFlowCountService(appID string, interval time.Duration) *RedisFlowCo
 			if err := RedisConfPipeline(func(c redis.Conn) {
 				//设置增加和超时时间
 				//写入命令,将数据发送给客户端(返回)
-				c.Send("INCRBY", dayKey, tickerCount) //写入key vaule,滴答计时器的滴答数目
+				c.Send("INCRBY", dayKey, tickerCount) //写入key vaule,滴答计时器的滴答数目,将 key 中储存的数字加上指定的增量值。 如果key 不存在,那么 key 的值会先被初始化为 0 ,然后再执行 INCRBY 命令
 				c.Send("EXPIRE", dayKey, 86400*2)     //设置key超时时间
 				c.Send("INCRBY", hourKey, tickerCount)
 				c.Send("EXPIRE", hourKey, 86400*2)

@@ -37,11 +37,11 @@ type ServiceUpdateHTTPInput struct {
 	UpstreamMaxIdle        int    `json:"upstream_max_idle" form:"upstream_max_idle" comment:"最大空闲链接数" example:"" validate:"min=0"`                     //最大空闲链接数
 }
 
-func (param *ServiceAddHTTPInput) BindValidParam(c *gin.Context) error {
+func (param *ServiceAddHttpInput) BindValidParam(c *gin.Context) error {
 	return common.ValidDefaultParams(c, param)
 }
 
-type ServiceAddHTTPInput struct {
+type ServiceAddHttpInput struct {
 	//service_info
 	ServiceName string `json:"service_name" form:"service_name" comment:"服务名" example:"" validate:"required,valid_service_name"` //服务名
 	ServiceDesc string `json:"service_desc" form:"service_desc" comment:"服务描述" example:"" validate:"required,max=255,min=1"`     //服务描述
@@ -59,7 +59,7 @@ type ServiceAddHTTPInput struct {
 	OpenAuth          int    `json:"open_auth" form:"open_auth" comment:"是否开启权限" example:"" validate:"max=1,min=0"`                  //关键词
 	BlackList         string `json:"black_list" form:"black_list" comment:"黑名单ip" example:"" validate:""`                            //黑名单ip
 	WhiteList         string `json:"white_list" form:"white_list" comment:"白名单ip" example:"" validate:""`                            //白名单ip
-	ClientipFlowLimit int    `json:"clientip_flow_limit" form:"clientip_flow_limit" comment:"客户端ip限流	" example:"" validate:"min=0"` //客户端ip限流
+	ClientipFlowLimit int    `json:"clientip_flow_limit" form:"clientip_flow_limit" comment:"客户端ip限流	" example:"" validate:"min=0"` //客户端ip限流
 	ServiceFlowLimit  int    `json:"service_flow_limit" form:"service_flow_limit" comment:"服务端限流" example:"" validate:"min=0"`       //服务端限流
 
 	//service_load_balance

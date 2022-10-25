@@ -34,6 +34,7 @@ func (counter *FlowCounter) GetCounter(serverName string) (*RedisFlowCountServic
 		}
 	}
 
+	//实际的创建统计器的逻辑
 	//如果没有统计该服务的流量信息,就创建流量统计功能,服务流量统计器的appid就是流量统计前缀+服务名
 	newCounter := NewRedisFlowCountService(serverName, 1*time.Second)
 	//将新的流量统计器信息添加到流量统计器的切片和map中

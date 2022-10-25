@@ -21,8 +21,8 @@ func ServiceRegister(group *gin.RouterGroup) {
 	group.GET("/delete", service.ServiceDelete)
 	group.GET("/detail", service.ServiceDetail)
 	group.GET("/stat", service.ServiceStat)
-	group.POST("/add_http", service.ServiceAddHTTP)
-	group.POST("/update_http", service.ServiceUpdateHTTP)
+	group.POST("/add_http", service.ServiceAddHttp)
+	group.POST("/update_http", service.ServiceUpdateHttp)
 	group.POST("/add_tcp", service.ServiceAddTcp)
 	group.POST("/update_tcp", service.ServiceUpdateTcp)
 	group.POST("/add_grpc", service.ServiceAddGrpc)
@@ -215,154 +215,172 @@ func (s *ServiceController) ServiceDetail(ctx *gin.Context) {
 // @Param id query string true "服务ID"
 // @Success 200 {object} middleware.Response{data=dto.ServiceStatOutput} "success"
 // @Router /service/stat [get]
-func (service *ServiceController) ServiceStat(c *gin.Context) {
-	params := &dto.ServiceDeleteInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (s *ServiceController) ServiceStat(ctx *gin.Context) {
+	in := &dto.ServiceDeleteInput{}
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
-	//读取基本信息
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
-		return
-	}
-	serviceInfo := &dao.ServiceInfo{ID: params.ID}
-	serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
-	if err != nil {
-		middleware.ResponseError(c, 2003, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
+	serviceInfo := &dao.ServiceInfo{ID: in.ID}
+	serviceDetail, err := serviceInfo.ServiceDetail(ctx, tx, serviceInfo)
 	if err != nil {
-		middleware.ResponseError(c, 2004, err)
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
+
+	//服务流量统计器,服务流量统计前缀+服务名称
+	counter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
+	if err != nil {
+		middleware.ResponseError(ctx, 2004, err)
+		return
+	}
+
 	todayList := []int64{}
 	currentTime := time.Now()
-	for i := 0; i <= currentTime.Hour(); i++ {
-		dateTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), i, 0, 0, 0, lib.TimeLocation)
-		hourData, _ := counter.GetHourData(dateTime)
-		todayList = append(todayList, hourData)
+	//当日的数据
+	for h := 0; h <= currentTime.Hour(); h++ {
+		dateTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), h, 0, 0, 0, lib.TimeLocation)
+		hourData, _ := counter.GetHourData(dateTime) //这个小时的数据
+		todayList = append(todayList, hourData)      //追加到当天的数据列表中,按小时为粒度进行统计
 	}
 
 	yesterdayList := []int64{}
 	yesterTime := currentTime.Add(-1 * time.Duration(time.Hour*24))
-	for i := 0; i <= 23; i++ {
-		dateTime := time.Date(yesterTime.Year(), yesterTime.Month(), yesterTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+	//昨日的数据
+	for h := 0; h <= 23; h++ {
+		dateTime := time.Date(yesterTime.Year(), yesterTime.Month(), yesterTime.Day(), h, 0, 0, 0, lib.TimeLocation) //时区在配置加载是初始化为"Asia/Shanghai"
 		hourData, _ := counter.GetHourData(dateTime)
 		yesterdayList = append(yesterdayList, hourData)
 	}
-	middleware.ResponseSuccess(c, &dto.ServiceStatOutput{
+
+	middleware.ResponseSuccess(ctx, &dto.ServiceStatOutput{
 		Today:     todayList,
 		Yesterday: yesterdayList,
 	})
 }
 
-// ServiceAddHTTP godoc
+// ServiceAddHttp godoc
 // @Summary 添加HTTP服务
 // @Description 添加HTTP服务
 // @Tags service管理
 // @ID /service/add_http
 // @Accept  json
 // @Produce  json
-// @Param body body dto.ServiceAddHTTPInput true "body"
+// @Param body body dto.ServiceAddHttpInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/add_http [post]
-func (service *ServiceController) ServiceAddHTTP(c *gin.Context) {
-	params := &dto.ServiceAddHTTPInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (s *ServiceController) ServiceAddHttp(ctx *gin.Context) {
+	in := &dto.ServiceAddHttpInput{}
+	//输入参数校验
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2004, errors.New("IP列表与权重列表数量不一致"))
+	//ip权重数目校验
+	//接入网关的服务的地址,实际的工作负载,每条ip格式ip:port
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2004, errors.New("IP列表与权重列表数量不一致"))
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
+	//这类型的添加,设计到多张表,往往组要servicedetail,修改多张表需要开启事务,这里使用本地事务
 	tx = tx.Begin()
-	serviceInfo := &dao.ServiceInfo{ServiceName: params.ServiceName}
-	if _, err = serviceInfo.Find(c, tx, serviceInfo); err == nil {
-		tx.Rollback()
-		middleware.ResponseError(c, 2002, errors.New("服务已存在"))
+
+	//服务名称冲突校验
+	serviceInfo := &dao.ServiceInfo{ServiceName: in.ServiceName}
+	if _, err = serviceInfo.Find(ctx, tx, serviceInfo); err == nil {
+		tx.Rollback()                                                       //出错就直接回滚
+		middleware.ResponseError(ctx, 2002, errors.New("服务已存在,该服务名称已经被使用")) //判断新增的服务名称是否和已有的服务名称冲突
 		return
 	}
 
-	httpUrl := &dao.HttpRule{RuleType: params.RuleType, Rule: params.Rule}
-	if _, err := httpUrl.Find(c, tx, httpUrl); err == nil {
+	httpUrl := &dao.HttpRule{RuleType: in.RuleType, Rule: in.Rule}
+	//判断接入类型(前缀或者域名)和接入的前缀(路径)或域名是否冲突
+	if _, err := httpUrl.Find(ctx, tx, httpUrl); err == nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2003, errors.New("服务接入前缀或域名已存在"))
+		middleware.ResponseError(ctx, 2003, errors.New("服务的接入前缀或域名已存在")) //网关统一代理全部后端实际的服务
 		return
 	}
 
-	serviceModel := &dao.ServiceInfo{
-		ServiceName: params.ServiceName,
-		ServiceDesc: params.ServiceDesc,
+	//存入service_info表
+	serviceInfoDao := &dao.ServiceInfo{
+		ServiceName: in.ServiceName,
+		ServiceDesc: in.ServiceDesc,
 	}
-	if err := serviceModel.Save(c, tx); err != nil {
+	if err := serviceInfoDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2005, err)
-		return
-	}
-	//serviceModel.ID
-	httpRule := &dao.HttpRule{
-		ServiceID:      serviceModel.ID,
-		RuleType:       params.RuleType,
-		Rule:           params.Rule,
-		NeedHttps:      params.NeedHttps,
-		NeedStripUri:   params.NeedStripUri,
-		NeedWebsocket:  params.NeedWebsocket,
-		UrlRewrite:     params.UrlRewrite,
-		HeaderTransfor: params.HeaderTransfor,
-	}
-	if err := httpRule.Save(c, tx); err != nil {
-		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
+		middleware.ResponseError(ctx, 2005, err)
 		return
 	}
 
-	accessControl := &dao.AccessControl{
-		ServiceID:         serviceModel.ID,
-		OpenAuth:          params.OpenAuth,
-		BlackList:         params.BlackList,
-		WhiteList:         params.WhiteList,
-		ClientIPFlowLimit: params.ClientipFlowLimit,
-		ServiceFlowLimit:  params.ServiceFlowLimit,
+	//存入service_http_rule表
+	httpDao := &dao.HttpRule{
+		ServiceID:      serviceInfoDao.ID,
+		RuleType:       in.RuleType,
+		Rule:           in.Rule,
+		NeedHttps:      in.NeedHttps,
+		NeedStripUri:   in.NeedStripUri,
+		NeedWebsocket:  in.NeedWebsocket,
+		UrlRewrite:     in.UrlRewrite,
+		HeaderTransfor: in.HeaderTransfor,
 	}
-	if err := accessControl.Save(c, tx); err != nil {
+	if err := httpDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2007, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
 
-	loadbalance := &dao.LoadBalance{
-		ServiceID:              serviceModel.ID,
-		RoundType:              params.RoundType,
-		IpList:                 params.IpList,
-		WeightList:             params.WeightList,
-		UpstreamConnectTimeout: params.UpstreamConnectTimeout,
-		UpstreamHeaderTimeout:  params.UpstreamHeaderTimeout,
-		UpstreamIdleTimeout:    params.UpstreamIdleTimeout,
-		UpstreamMaxIdle:        params.UpstreamMaxIdle,
+	//存入service_access_control表
+	accessControlDao := &dao.AccessControl{
+		ServiceID:         serviceInfoDao.ID,
+		OpenAuth:          in.OpenAuth,
+		BlackList:         in.BlackList,
+		WhiteList:         in.WhiteList,
+		ClientIPFlowLimit: in.ClientipFlowLimit,
+		ServiceFlowLimit:  in.ServiceFlowLimit,
 	}
-	if err := loadbalance.Save(c, tx); err != nil {
+	if err := accessControlDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2008, err)
+		middleware.ResponseError(ctx, 2007, err)
 		return
 	}
+
+	//存入service_load_balance表
+	loadbalanceDao := &dao.LoadBalance{
+		ServiceID:              serviceInfoDao.ID,
+		RoundType:              in.RoundType,
+		IpList:                 in.IpList,
+		WeightList:             in.WeightList,
+		UpstreamConnectTimeout: in.UpstreamConnectTimeout,
+		UpstreamHeaderTimeout:  in.UpstreamHeaderTimeout,
+		UpstreamIdleTimeout:    in.UpstreamIdleTimeout,
+		UpstreamMaxIdle:        in.UpstreamMaxIdle,
+	}
+	if err := loadbalanceDao.Save(ctx, tx); err != nil {
+		tx.Rollback()
+		middleware.ResponseError(ctx, 2008, err)
+		return
+	}
+
+	//全部成功那么就提交事务
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "添加http操作成功")
 }
 
-// ServiceUpdateHTTP godoc
+// ServiceUpdateHttp godoc
 // @Summary 修改HTTP服务
 // @Description 修改HTTP服务
 // @Tags service管理
@@ -372,88 +390,96 @@ func (service *ServiceController) ServiceAddHTTP(c *gin.Context) {
 // @Param body body dto.ServiceUpdateHTTPInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/update_http [post]
-func (service *ServiceController) ServiceUpdateHTTP(c *gin.Context) {
-	params := &dto.ServiceUpdateHTTPInput{}
-	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+func (s *ServiceController) ServiceUpdateHttp(ctx *gin.Context) {
+	//跟添加差不多,不过有些字段不能修改,比如服务名称
+	in := &dto.ServiceUpdateHTTPInput{}
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2001, errors.New("IP列表与权重列表数量不一致"))
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2001, errors.New("IP列表与权重列表数量不一致"))
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
+
 	tx = tx.Begin()
-	serviceInfo := &dao.ServiceInfo{ServiceName: params.ServiceName}
-	serviceInfo, err = serviceInfo.Find(c, tx, serviceInfo)
+	serviceInfo := &dao.ServiceInfo{ServiceName: in.ServiceName}
+	serviceInfo, err = serviceInfo.Find(ctx, tx, serviceInfo)
 	if err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2003, errors.New("服务不存在"))
+		middleware.ResponseError(ctx, 2003, errors.New("service不存在"))
 		return
 	}
-	serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
+
+	//获取该service的servicedetail
+	serviceDetail, err := serviceInfo.ServiceDetail(ctx, tx, serviceInfo)
 	if err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2004, errors.New("服务不存在"))
+		middleware.ResponseError(ctx, 2004, errors.New("service不存在"))
 		return
 	}
 
-	info := serviceDetail.ServiceInfo
-	info.ServiceDesc = params.ServiceDesc
-	if err := info.Save(c, tx); err != nil {
+	//service_info
+	serviceInfoDao := serviceDetail.ServiceInfo
+	serviceInfoDao.ServiceDesc = in.ServiceDesc
+	if err := serviceInfoDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2005, err)
+		middleware.ResponseError(ctx, 2005, err)
 		return
 	}
 
-	httpRule := serviceDetail.HTTPRule
-	httpRule.NeedHttps = params.NeedHttps
-	httpRule.NeedStripUri = params.NeedStripUri
-	httpRule.NeedWebsocket = params.NeedWebsocket
-	httpRule.UrlRewrite = params.UrlRewrite
-	httpRule.HeaderTransfor = params.HeaderTransfor
-	if err := httpRule.Save(c, tx); err != nil {
+	//service_http_rule
+	httpRuleDao := serviceDetail.HTTPRule
+	httpRuleDao.NeedHttps = in.NeedHttps
+	httpRuleDao.NeedStripUri = in.NeedStripUri
+	httpRuleDao.NeedWebsocket = in.NeedWebsocket
+	httpRuleDao.UrlRewrite = in.UrlRewrite
+	httpRuleDao.HeaderTransfor = in.HeaderTransfor
+	if err := httpRuleDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
 
-	accessControl := serviceDetail.AccessControl
-	accessControl.OpenAuth = params.OpenAuth
-	accessControl.BlackList = params.BlackList
-	accessControl.WhiteList = params.WhiteList
-	accessControl.ClientIPFlowLimit = params.ClientipFlowLimit
-	accessControl.ServiceFlowLimit = params.ServiceFlowLimit
-	if err := accessControl.Save(c, tx); err != nil {
+	//service_access_control
+	accessControlDao := serviceDetail.AccessControl
+	accessControlDao.OpenAuth = in.OpenAuth
+	accessControlDao.BlackList = in.BlackList
+	accessControlDao.WhiteList = in.WhiteList
+	accessControlDao.ClientIPFlowLimit = in.ClientipFlowLimit
+	accessControlDao.ServiceFlowLimit = in.ServiceFlowLimit
+	if err := accessControlDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2007, err)
+		middleware.ResponseError(ctx, 2007, err)
 		return
 	}
 
-	loadbalance := serviceDetail.LoadBalance
-	loadbalance.RoundType = params.RoundType
-	loadbalance.IpList = params.IpList
-	loadbalance.WeightList = params.WeightList
-	loadbalance.UpstreamConnectTimeout = params.UpstreamConnectTimeout
-	loadbalance.UpstreamHeaderTimeout = params.UpstreamHeaderTimeout
-	loadbalance.UpstreamIdleTimeout = params.UpstreamIdleTimeout
-	loadbalance.UpstreamMaxIdle = params.UpstreamMaxIdle
-	if err := loadbalance.Save(c, tx); err != nil {
+	//service_load_balance
+	loadbalanceDao := serviceDetail.LoadBalance
+	loadbalanceDao.RoundType = in.RoundType
+	loadbalanceDao.IpList = in.IpList
+	loadbalanceDao.WeightList = in.WeightList
+	loadbalanceDao.UpstreamConnectTimeout = in.UpstreamConnectTimeout
+	loadbalanceDao.UpstreamHeaderTimeout = in.UpstreamHeaderTimeout
+	loadbalanceDao.UpstreamIdleTimeout = in.UpstreamIdleTimeout
+	loadbalanceDao.UpstreamMaxIdle = in.UpstreamMaxIdle
+	if err := loadbalanceDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2008, err)
+		middleware.ResponseError(ctx, 2008, err)
 		return
 	}
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "更新http")
 }
 
-// ServiceAddHttp godoc
+// ServiceAddTcp godoc
 // @Summary 添加tcp服务
 // @Description 添加tcp服务
 // @Tags service管理
@@ -463,95 +489,97 @@ func (service *ServiceController) ServiceUpdateHTTP(c *gin.Context) {
 // @Param body body dto.ServiceAddTcpInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/add_tcp [post]
-func (admin *ServiceController) ServiceAddTcp(c *gin.Context) {
-	params := &dto.ServiceAddTcpInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+func (admin *ServiceController) ServiceAddTcp(ctx *gin.Context) {
+	in := &dto.ServiceAddTcpInput{}
+	if err := in.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//验证 service_name 是否被占用
 	infoSearch := &dao.ServiceInfo{
-		ServiceName: params.ServiceName,
+		ServiceName: in.ServiceName,
 		IsDelete:    0,
 	}
-	if _, err := infoSearch.Find(c, lib.GORMDefaultPool, infoSearch); err == nil {
-		middleware.ResponseError(c, 2002, errors.New("服务名被占用，请重新输入"))
+	//tx, err := lib.GetGormPool("default")
+	if _, err := infoSearch.Find(ctx, lib.GORMDefaultPool, infoSearch); err == nil {
+		middleware.ResponseError(ctx, 2002, errors.New("(tcp)服务名已经存在"))
 		return
 	}
 
-	//验证端口是否被占用?
+	//判断端口是不是已经被使用了
 	tcpRuleSearch := &dao.TcpRule{
-		Port: params.Port,
+		Port: in.Port,
 	}
-	if _, err := tcpRuleSearch.Find(c, lib.GORMDefaultPool, tcpRuleSearch); err == nil {
-		middleware.ResponseError(c, 2003, errors.New("服务端口被占用，请重新输入"))
+	if _, err := tcpRuleSearch.Find(ctx, lib.GORMDefaultPool, tcpRuleSearch); err == nil {
+		middleware.ResponseError(ctx, 2003, errors.New("服务端口被占用，请重新输入"))
 		return
 	}
 	grpcRuleSearch := &dao.GrpcRule{
-		Port: params.Port,
+		Port: in.Port,
 	}
-	if _, err := grpcRuleSearch.Find(c, lib.GORMDefaultPool, grpcRuleSearch); err == nil {
-		middleware.ResponseError(c, 2004, errors.New("服务端口被占用，请重新输入"))
+	if _, err := grpcRuleSearch.Find(ctx, lib.GORMDefaultPool, grpcRuleSearch); err == nil {
+		middleware.ResponseError(ctx, 2004, errors.New("服务端口被占用，请重新输入"))
 		return
 	}
 
-	//ip与权重数量一致
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2005, errors.New("ip列表与权重设置不匹配"))
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2005, errors.New("ip列表与权重设置不匹配"))
 		return
 	}
 
 	tx := lib.GORMDefaultPool.Begin()
-	info := &dao.ServiceInfo{
+
+	serviceInfo := &dao.ServiceInfo{
 		LoadType:    common.LoadTypeTCP,
-		ServiceName: params.ServiceName,
-		ServiceDesc: params.ServiceDesc,
+		ServiceName: in.ServiceName,
+		ServiceDesc: in.ServiceDesc,
 	}
-	if err := info.Save(c, tx); err != nil {
+	if err := serviceInfo.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
-		return
-	}
-	loadBalance := &dao.LoadBalance{
-		ServiceID:  info.ID,
-		RoundType:  params.RoundType,
-		IpList:     params.IpList,
-		WeightList: params.WeightList,
-		ForbidList: params.ForbidList,
-	}
-	if err := loadBalance.Save(c, tx); err != nil {
-		tx.Rollback()
-		middleware.ResponseError(c, 2007, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
 
-	httpRule := &dao.TcpRule{
-		ServiceID: info.ID,
-		Port:      params.Port,
+	loadBalanceDao := &dao.LoadBalance{
+		ServiceID:  serviceInfo.ID,
+		RoundType:  in.RoundType,
+		IpList:     in.IpList,
+		WeightList: in.WeightList,
+		ForbidList: in.ForbidList,
 	}
-	if err := httpRule.Save(c, tx); err != nil {
+	if err := loadBalanceDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2008, err)
+		middleware.ResponseError(ctx, 2007, err)
 		return
 	}
 
-	accessControl := &dao.AccessControl{
-		ServiceID:         info.ID,
-		OpenAuth:          params.OpenAuth,
-		BlackList:         params.BlackList,
-		WhiteList:         params.WhiteList,
-		WhiteHostName:     params.WhiteHostName,
-		ClientIPFlowLimit: params.ClientIPFlowLimit,
-		ServiceFlowLimit:  params.ServiceFlowLimit,
+	httpRuleDao := &dao.TcpRule{
+		ServiceID: serviceInfo.ID,
+		Port:      in.Port,
 	}
-	if err := accessControl.Save(c, tx); err != nil {
+	if err := httpRuleDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2009, err)
+		middleware.ResponseError(ctx, 2008, err)
 		return
 	}
+
+	accessControlDao := &dao.AccessControl{
+		ServiceID:         serviceInfo.ID,
+		OpenAuth:          in.OpenAuth,
+		BlackList:         in.BlackList,
+		WhiteList:         in.WhiteList,
+		WhiteHostName:     in.WhiteHostName,
+		ClientIPFlowLimit: in.ClientIPFlowLimit,
+		ServiceFlowLimit:  in.ServiceFlowLimit,
+	}
+	if err := accessControlDao.Save(ctx, tx); err != nil {
+		tx.Rollback()
+		middleware.ResponseError(ctx, 2009, err)
+		return
+	}
+
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "添加tcp成功")
 	return
 }
 
@@ -565,83 +593,87 @@ func (admin *ServiceController) ServiceAddTcp(c *gin.Context) {
 // @Param body body dto.ServiceUpdateTcpInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/update_tcp [post]
-func (admin *ServiceController) ServiceUpdateTcp(c *gin.Context) {
-	params := &dto.ServiceUpdateTcpInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+func (s *ServiceController) ServiceUpdateTcp(ctx *gin.Context) {
+	//tcp和grpc:添加端口,grpc:metadata
+	in := &dto.ServiceUpdateTcpInput{}
+	if err := in.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//ip与权重数量一致
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2002, errors.New("ip列表与权重设置不匹配"))
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2002, errors.New("ip列表与权重设置不匹配"))
 		return
 	}
 
 	tx := lib.GORMDefaultPool.Begin()
 
-	service := &dao.ServiceInfo{
-		ID: params.ID,
+	serviceInfo := &dao.ServiceInfo{
+		ID: in.ID,
 	}
-	detail, err := service.ServiceDetail(c, lib.GORMDefaultPool, service)
+	serviceDetail, err := serviceInfo.ServiceDetail(ctx, lib.GORMDefaultPool, serviceInfo)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
 
-	info := detail.ServiceInfo
-	info.ServiceDesc = params.ServiceDesc
-	if err := info.Save(c, tx); err != nil {
+	seriverInfoDao := serviceDetail.ServiceInfo
+	seriverInfoDao.ServiceDesc = in.ServiceDesc
+	if err := seriverInfoDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2003, err)
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
 
-	loadBalance := &dao.LoadBalance{}
-	if detail.LoadBalance != nil {
-		loadBalance = detail.LoadBalance
+	loadBalanceDao := &dao.LoadBalance{}
+	if serviceDetail.LoadBalance != nil {
+		loadBalanceDao = serviceDetail.LoadBalance
 	}
-	loadBalance.ServiceID = info.ID
-	loadBalance.RoundType = params.RoundType
-	loadBalance.IpList = params.IpList
-	loadBalance.WeightList = params.WeightList
-	loadBalance.ForbidList = params.ForbidList
-	if err := loadBalance.Save(c, tx); err != nil {
+
+	loadBalanceDao.ServiceID = serviceInfo.ID
+	loadBalanceDao.RoundType = in.RoundType
+	loadBalanceDao.IpList = in.IpList
+	loadBalanceDao.WeightList = in.WeightList
+	loadBalanceDao.ForbidList = in.ForbidList
+	if err := loadBalanceDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2004, err)
+		middleware.ResponseError(ctx, 2004, err)
 		return
 	}
 
-	tcpRule := &dao.TcpRule{}
-	if detail.TCPRule != nil {
-		tcpRule = detail.TCPRule
+	tcpRuleDao := &dao.TcpRule{}
+	if serviceDetail.TCPRule != nil {
+		tcpRuleDao = serviceDetail.TCPRule
 	}
-	tcpRule.ServiceID = info.ID
-	tcpRule.Port = params.Port
-	if err := tcpRule.Save(c, tx); err != nil {
+
+	tcpRuleDao.ServiceID = serviceInfo.ID
+	tcpRuleDao.Port = in.Port
+	if err := tcpRuleDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2005, err)
+		middleware.ResponseError(ctx, 2005, err)
 		return
 	}
 
-	accessControl := &dao.AccessControl{}
-	if detail.AccessControl != nil {
-		accessControl = detail.AccessControl
+	accessControlDao := &dao.AccessControl{}
+	if serviceDetail.AccessControl != nil {
+		accessControlDao = serviceDetail.AccessControl
 	}
-	accessControl.ServiceID = info.ID
-	accessControl.OpenAuth = params.OpenAuth
-	accessControl.BlackList = params.BlackList
-	accessControl.WhiteList = params.WhiteList
-	accessControl.WhiteHostName = params.WhiteHostName
-	accessControl.ClientIPFlowLimit = params.ClientIPFlowLimit
-	accessControl.ServiceFlowLimit = params.ServiceFlowLimit
-	if err := accessControl.Save(c, tx); err != nil {
+
+	accessControlDao.ServiceID = serviceInfo.ID
+	accessControlDao.OpenAuth = in.OpenAuth
+	accessControlDao.BlackList = in.BlackList
+	accessControlDao.WhiteList = in.WhiteList
+	accessControlDao.WhiteHostName = in.WhiteHostName
+	accessControlDao.ClientIPFlowLimit = in.ClientIPFlowLimit
+	accessControlDao.ServiceFlowLimit = in.ServiceFlowLimit
+	if err := accessControlDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
+
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "更新tcp服务成功")
 	return
 }
 
@@ -655,101 +687,100 @@ func (admin *ServiceController) ServiceUpdateTcp(c *gin.Context) {
 // @Param body body dto.ServiceAddGrpcInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/add_grpc [post]
-func (admin *ServiceController) ServiceAddGrpc(c *gin.Context) {
-	params := &dto.ServiceAddGrpcInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+func (s *ServiceController) ServiceAddGrpc(ctx *gin.Context) {
+	in := &dto.ServiceAddGrpcInput{}
+	if err := in.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
-	//验证 service_name 是否被占用
-	infoSearch := &dao.ServiceInfo{
-		ServiceName: params.ServiceName,
+	search := &dao.ServiceInfo{
+		ServiceName: in.ServiceName,
 		IsDelete:    0,
 	}
-	if _, err := infoSearch.Find(c, lib.GORMDefaultPool, infoSearch); err == nil {
-		middleware.ResponseError(c, 2002, errors.New("服务名被占用，请重新输入"))
+	if _, err := search.Find(ctx, lib.GORMDefaultPool, search); err == nil {
+		middleware.ResponseError(ctx, 2002, errors.New("服务已经存在"))
 		return
 	}
 
-	//验证端口是否被占用?
-	tcpRuleSearch := &dao.TcpRule{
-		Port: params.Port,
+	tcpSearch := &dao.TcpRule{
+		Port: in.Port,
 	}
-	if _, err := tcpRuleSearch.Find(c, lib.GORMDefaultPool, tcpRuleSearch); err == nil {
-		middleware.ResponseError(c, 2003, errors.New("服务端口被占用，请重新输入"))
+
+	if _, err := tcpSearch.Find(ctx, lib.GORMDefaultPool, tcpSearch); err == nil {
+		middleware.ResponseError(ctx, 2003, errors.New("服务端口被占用"))
 		return
 	}
-	grpcRuleSearch := &dao.GrpcRule{
-		Port: params.Port,
+	grpcSearch := &dao.GrpcRule{
+		Port: in.Port,
 	}
-	if _, err := grpcRuleSearch.Find(c, lib.GORMDefaultPool, grpcRuleSearch); err == nil {
-		middleware.ResponseError(c, 2004, errors.New("服务端口被占用，请重新输入"))
+	if _, err := grpcSearch.Find(ctx, lib.GORMDefaultPool, grpcSearch); err == nil {
+		middleware.ResponseError(ctx, 2004, errors.New("服务端口被占用"))
 		return
 	}
 
-	//ip与权重数量一致
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2005, errors.New("ip列表与权重设置不匹配"))
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2005, errors.New("ip和权重数目不一致"))
 		return
 	}
 
 	tx := lib.GORMDefaultPool.Begin()
-	info := &dao.ServiceInfo{
+	infoDao := &dao.ServiceInfo{
 		LoadType:    common.LoadTypeGRPC,
-		ServiceName: params.ServiceName,
-		ServiceDesc: params.ServiceDesc,
+		ServiceName: in.ServiceName,
+		ServiceDesc: in.ServiceDesc,
 	}
-	if err := info.Save(c, tx); err != nil {
+	if err := infoDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
 
-	loadBalance := &dao.LoadBalance{
-		ServiceID:  info.ID,
-		RoundType:  params.RoundType,
-		IpList:     params.IpList,
-		WeightList: params.WeightList,
-		ForbidList: params.ForbidList,
+	loadBalanceDao := &dao.LoadBalance{
+		ServiceID:  infoDao.ID,
+		RoundType:  in.RoundType,
+		IpList:     in.IpList,
+		WeightList: in.WeightList,
+		ForbidList: in.ForbidList,
 	}
-	if err := loadBalance.Save(c, tx); err != nil {
+	if err := loadBalanceDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2007, err)
+		middleware.ResponseError(ctx, 2007, err)
 		return
 	}
 
-	grpcRule := &dao.GrpcRule{
-		ServiceID:      info.ID,
-		Port:           params.Port,
-		HeaderTransfor: params.HeaderTransfor,
+	grpcDao := &dao.GrpcRule{
+		ServiceID:      infoDao.ID,
+		Port:           in.Port,
+		HeaderTransfor: in.HeaderTransfor,
 	}
-	if err := grpcRule.Save(c, tx); err != nil {
+	if err := grpcDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2008, err)
+		middleware.ResponseError(ctx, 2008, err)
 		return
 	}
 
-	accessControl := &dao.AccessControl{
-		ServiceID:         info.ID,
-		OpenAuth:          params.OpenAuth,
-		BlackList:         params.BlackList,
-		WhiteList:         params.WhiteList,
-		WhiteHostName:     params.WhiteHostName,
-		ClientIPFlowLimit: params.ClientIPFlowLimit,
-		ServiceFlowLimit:  params.ServiceFlowLimit,
+	accessControlDao := &dao.AccessControl{
+		ServiceID:         infoDao.ID,
+		OpenAuth:          in.OpenAuth,
+		BlackList:         in.BlackList,
+		WhiteList:         in.WhiteList,
+		WhiteHostName:     in.WhiteHostName,
+		ClientIPFlowLimit: in.ClientIPFlowLimit,
+		ServiceFlowLimit:  in.ServiceFlowLimit,
 	}
-	if err := accessControl.Save(c, tx); err != nil {
+	if err := accessControlDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2009, err)
+		middleware.ResponseError(ctx, 2009, err)
 		return
 	}
+
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "添加grpc成功")
 	return
 }
 
-// ServiceUpdateTcp godoc
+// ServiceUpdateGrpc godoc
 // @Summary 更新grpc服务
 // @Description 更新grpc服务
 // @Tags service管理
@@ -759,83 +790,86 @@ func (admin *ServiceController) ServiceAddGrpc(c *gin.Context) {
 // @Param body body dto.ServiceUpdateGrpcInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/update_grpc [post]
-func (admin *ServiceController) ServiceUpdateGrpc(c *gin.Context) {
-	params := &dto.ServiceUpdateGrpcInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+func (s *ServiceController) ServiceUpdateGrpc(ctx *gin.Context) {
+	in := &dto.ServiceUpdateGrpcInput{}
+	if err := in.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 
 	//ip与权重数量一致
-	if len(strings.Split(params.IpList, ",")) != len(strings.Split(params.WeightList, ",")) {
-		middleware.ResponseError(c, 2002, errors.New("ip列表与权重设置不匹配"))
+	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
+		middleware.ResponseError(ctx, 2002, errors.New("ip列表与权重设置不匹配"))
 		return
 	}
 
 	tx := lib.GORMDefaultPool.Begin()
 
 	service := &dao.ServiceInfo{
-		ID: params.ID,
+		ID: in.ID,
 	}
-	detail, err := service.ServiceDetail(c, lib.GORMDefaultPool, service)
+	detail, err := service.ServiceDetail(ctx, lib.GORMDefaultPool, service)
 	if err != nil {
-		middleware.ResponseError(c, 2003, err)
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
 
 	info := detail.ServiceInfo
-	info.ServiceDesc = params.ServiceDesc
-	if err := info.Save(c, tx); err != nil {
+	info.ServiceDesc = in.ServiceDesc
+	if err := info.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2004, err)
+		middleware.ResponseError(ctx, 2004, err)
 		return
 	}
 
-	loadBalance := &dao.LoadBalance{}
+	loadBalanceDao := &dao.LoadBalance{}
 	if detail.LoadBalance != nil {
-		loadBalance = detail.LoadBalance
+		loadBalanceDao = detail.LoadBalance
 	}
-	loadBalance.ServiceID = info.ID
-	loadBalance.RoundType = params.RoundType
-	loadBalance.IpList = params.IpList
-	loadBalance.WeightList = params.WeightList
-	loadBalance.ForbidList = params.ForbidList
-	if err := loadBalance.Save(c, tx); err != nil {
+
+	loadBalanceDao.ServiceID = info.ID
+	loadBalanceDao.RoundType = in.RoundType
+	loadBalanceDao.IpList = in.IpList
+	loadBalanceDao.WeightList = in.WeightList
+	loadBalanceDao.ForbidList = in.ForbidList
+	if err := loadBalanceDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2005, err)
+		middleware.ResponseError(ctx, 2005, err)
 		return
 	}
 
-	grpcRule := &dao.GrpcRule{}
+	grpcDao := &dao.GrpcRule{}
 	if detail.GRPCRule != nil {
-		grpcRule = detail.GRPCRule
+		grpcDao = detail.GRPCRule
 	}
-	grpcRule.ServiceID = info.ID
+	grpcDao.ServiceID = info.ID
 	//grpcRule.Port = params.Port
-	grpcRule.HeaderTransfor = params.HeaderTransfor
-	if err := grpcRule.Save(c, tx); err != nil {
+	grpcDao.HeaderTransfor = in.HeaderTransfor
+	if err := grpcDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2006, err)
+		middleware.ResponseError(ctx, 2006, err)
 		return
 	}
 
-	accessControl := &dao.AccessControl{}
+	accessControlDao := &dao.AccessControl{}
 	if detail.AccessControl != nil {
-		accessControl = detail.AccessControl
+		accessControlDao = detail.AccessControl
 	}
-	accessControl.ServiceID = info.ID
-	accessControl.OpenAuth = params.OpenAuth
-	accessControl.BlackList = params.BlackList
-	accessControl.WhiteList = params.WhiteList
-	accessControl.WhiteHostName = params.WhiteHostName
-	accessControl.ClientIPFlowLimit = params.ClientIPFlowLimit
-	accessControl.ServiceFlowLimit = params.ServiceFlowLimit
-	if err := accessControl.Save(c, tx); err != nil {
+
+	accessControlDao.ServiceID = info.ID
+	accessControlDao.OpenAuth = in.OpenAuth
+	accessControlDao.BlackList = in.BlackList
+	accessControlDao.WhiteList = in.WhiteList
+	accessControlDao.WhiteHostName = in.WhiteHostName
+	accessControlDao.ClientIPFlowLimit = in.ClientIPFlowLimit
+	accessControlDao.ServiceFlowLimit = in.ServiceFlowLimit
+	if err := accessControlDao.Save(ctx, tx); err != nil {
 		tx.Rollback()
-		middleware.ResponseError(c, 2007, err)
+		middleware.ResponseError(ctx, 2007, err)
 		return
 	}
+
 	tx.Commit()
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(ctx, "更新tcp成功")
 	return
 }

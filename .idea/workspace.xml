@@ -5,24 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/admininfo.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/admininfo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/login.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/login.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/market.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/market.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/tenant.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/tenant.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dao/tenant.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/tenant.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dto/tenant.go" beforeDir="false" afterPath="$PROJECT_DIR$/dto/tenant.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_auth_token.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_auth_token.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_count.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_limit.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_auth_token.go" beforeDir="false" afterPath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_auth_token.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_count.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_limit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service_ac.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service_ac.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/docs.go" beforeDir="false" afterPath="$PROJECT_DIR$/docs/docs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dto/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/dto/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102412" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102412" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102413" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102413" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/middleware/translation.go" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/translation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/file" beforeDir="false" afterPath="$PROJECT_DIR$/tools/file" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/salt.go" beforeDir="false" afterPath="$PROJECT_DIR$/tools/salt.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
   </component>
   <component name="GOROOT" url="file:///usr/local/go" />
   <component name="Git.Settings">
@@ -35,12 +46,15 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2GZg0YQy3AwbW2plcqQPFpjBonr" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -50,7 +64,7 @@
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/gateway_test" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager">

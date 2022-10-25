@@ -36,7 +36,7 @@ func (service *MarketController) PanelData(c *gin.Context) {
 		return
 	}
 	serviceInfo := &dao.ServiceInfo{}
-	_, serviceNum, err := serviceInfo.PageList(c, tx, &dto.ServiceListInput{PageSize: 1, PageNo: 1})
+	_, serviceNum, err := serviceInfo.PageList(c, tx, &dto.ServiceListInput{PageSize: 1, PageNum: 1})
 	if err != nil {
 		middleware.ResponseError(c, 2002, err)
 		return
@@ -62,7 +62,7 @@ func (service *MarketController) PanelData(c *gin.Context) {
 }
 
 // ServiceStat godoc
-// @Summary service统计
+// @Summary service按类型统计
 // @Description service统计
 // @Tags market
 // @ID /market/service_stat
@@ -102,7 +102,7 @@ func (service *MarketController) ServiceStat(c *gin.Context) {
 // FlowStat godoc
 // @Summary 流量统计
 // @Description 流量统计
-// @Tags market大盘
+// @Tags market
 // @ID /market/flow_stat
 // @Accept  json
 // @Produce  json

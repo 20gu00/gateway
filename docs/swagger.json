@@ -1,14 +1,9 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "{{.Description}}",
-        "title": "{{.Title}}",
         "contact": {},
-        "license": {},
-        "version": "{{.Version}}"
+        "license": {}
     },
-    "host": "{{.Host}}",
-    "basePath": "{{.BasePath}}",
     "paths": {
         "/admin/admin_info": {
             "get": {
@@ -28,7 +23,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -37,7 +31,7 @@
         },
         "/admin/change_pwd": {
             "post": {
-                "description": "ChangePwd",
+                "description": "修改密码",
                 "consumes": [
                     "application/json"
                 ],
@@ -47,7 +41,7 @@
                 "tags": [
                     "admin接口"
                 ],
-                "summary": "ChangePwd",
+                "summary": "修改密码",
                 "operationId": "/admin/change_pwd",
                 "parameters": [
                     {
@@ -56,7 +50,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ChangePwdInput"
                         }
                     }
@@ -65,7 +58,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -74,7 +66,7 @@
         },
         "/admin_login/login": {
             "post": {
-                "description": "Login",
+                "description": "登录",
                 "consumes": [
                     "application/json"
                 ],
@@ -84,7 +76,7 @@
                 "tags": [
                     "admin接口"
                 ],
-                "summary": "Login",
+                "summary": "登录",
                 "operationId": "/admin_login/login",
                 "parameters": [
                     {
@@ -93,7 +85,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.AdminLoginInput"
                         }
                     }
@@ -102,7 +93,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -111,7 +101,7 @@
         },
         "/admin_login/logout": {
             "get": {
-                "description": "管理员退出",
+                "description": "退出",
                 "consumes": [
                     "application/json"
                 ],
@@ -119,15 +109,14 @@
                     "application/json"
                 ],
                 "tags": [
-                    "管理员接口"
+                    "admin接口"
                 ],
-                "summary": "管理员退出",
+                "summary": "退出",
                 "operationId": "/admin_login/logout",
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -144,7 +133,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "market大盘"
+                    "market"
                 ],
                 "summary": "流量统计",
                 "operationId": "/market/flow_stat",
@@ -152,7 +141,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -177,7 +165,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -196,13 +183,12 @@
                 "tags": [
                     "market"
                 ],
-                "summary": "service统计",
+                "summary": "service按类型统计",
                 "operationId": "/market/service_stat",
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -230,7 +216,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.TokensInput"
                         }
                     }
@@ -239,7 +224,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -267,7 +251,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ServiceAddGrpcInput"
                         }
                     }
@@ -276,7 +259,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -304,8 +286,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/dto.ServiceAddHTTPInput"
+                            "$ref": "#/definitions/dto.ServiceAddHttpInput"
                         }
                     }
                 ],
@@ -313,7 +294,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -341,7 +321,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ServiceAddTcpInput"
                         }
                     }
@@ -350,7 +329,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -384,7 +362,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -418,7 +395,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -465,7 +441,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -484,7 +459,7 @@
                 "tags": [
                     "service管理"
                 ],
-                "summary": "service统计",
+                "summary": "service统计(流量)",
                 "operationId": "/service/stat",
                 "parameters": [
                     {
@@ -499,7 +474,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -527,7 +501,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ServiceUpdateGrpcInput"
                         }
                     }
@@ -536,7 +509,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -564,7 +536,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ServiceUpdateHTTPInput"
                         }
                     }
@@ -573,7 +544,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -601,7 +571,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.ServiceUpdateTcpInput"
                         }
                     }
@@ -610,7 +579,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -619,7 +587,7 @@
         },
         "/tenant/add": {
             "post": {
-                "description": "租户添加",
+                "description": "网关租户添加",
                 "consumes": [
                     "application/json"
                 ],
@@ -629,7 +597,7 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户添加",
+                "summary": "网关租户添加",
                 "operationId": "/tenant/add",
                 "parameters": [
                     {
@@ -638,7 +606,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/dto.TenantAddHttpInput"
                         }
                     }
@@ -647,7 +614,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -656,7 +622,7 @@
         },
         "/tenant/delete": {
             "get": {
-                "description": "租户删除",
+                "description": "网关租户删除",
                 "consumes": [
                     "application/json"
                 ],
@@ -666,7 +632,7 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户删除",
+                "summary": "网关租户删除",
                 "operationId": "/tenant/delete",
                 "parameters": [
                     {
@@ -681,7 +647,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -690,7 +655,7 @@
         },
         "/tenant/detail": {
             "get": {
-                "description": "租户详情",
+                "description": "网关租户详情",
                 "consumes": [
                     "application/json"
                 ],
@@ -700,7 +665,7 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户详情",
+                "summary": "网关租户详情",
                 "operationId": "/tenant/detail",
                 "parameters": [
                     {
@@ -715,7 +680,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -724,7 +688,7 @@
         },
         "/tenant/list": {
             "get": {
-                "description": "租户列表",
+                "description": "网关租户列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -734,18 +698,18 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户列表",
+                "summary": "网关租户列表",
                 "operationId": "/tenant/list",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "关键词",
+                        "description": "搜索关键词",
                         "name": "info",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "每页多少条",
+                        "description": "每页数目",
                         "name": "page_size",
                         "in": "query",
                         "required": true
@@ -762,7 +726,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -771,7 +734,7 @@
         },
         "/tenant/stat": {
             "get": {
-                "description": "租户统计",
+                "description": "网关租户统计",
                 "consumes": [
                     "application/json"
                 ],
@@ -781,7 +744,7 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户统计",
+                "summary": "网关租户统计",
                 "operationId": "/tenant/stat",
                 "parameters": [
                     {
@@ -796,7 +759,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -805,7 +767,7 @@
         },
         "/tenant/update": {
             "post": {
-                "description": "租户更新",
+                "description": "网关租户更新",
                 "consumes": [
                     "application/json"
                 ],
@@ -815,7 +777,7 @@
                 "tags": [
                     "tenant管理"
                 ],
-                "summary": "租户更新",
+                "summary": "网关租户更新",
                 "operationId": "/tenant/update",
                 "parameters": [
                     {
@@ -824,8 +786,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/dto.TenantUpdateHttpInput"
+                            "$ref": "#/definitions/dto.TenantUpdateInput"
                         }
                     }
                 ],
@@ -833,7 +794,6 @@
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/middleware.Response"
                         }
                     }
@@ -928,7 +888,7 @@
                 }
             }
         },
-        "dto.ServiceAddHTTPInput": {
+        "dto.ServiceAddHttpInput": {
             "type": "object",
             "required": [
                 "ip_list",
@@ -943,7 +903,7 @@
                     "type": "string"
                 },
                 "clientip_flow_limit": {
-                    "description": "\u0008客户端ip限流",
+                    "description": "客户端ip限流",
                     "type": "integer"
                 },
                 "header_transfor": {
@@ -959,7 +919,7 @@
                     "type": "integer"
                 },
                 "need_strip_uri": {
-                    "description": "启用strip_uri",
+                    "description": "启用strip_uri,注意这个功能和url重写冲突性",
                     "type": "integer"
                 },
                 "need_websocket": {
@@ -975,7 +935,7 @@
                     "type": "integer"
                 },
                 "rule": {
-                    "description": "域名或者前缀",
+                    "description": "域名或者前缀(路径/add)",
                     "type": "string"
                 },
                 "rule_type": {
@@ -1325,7 +1285,7 @@
                 }
             }
         },
-        "dto.TenantUpdateHttpInput": {
+        "dto.TenantUpdateInput": {
             "type": "object",
             "required": [
                 "id",
@@ -1382,15 +1342,19 @@
                     "type": "object"
                 },
                 "errmsg": {
+                    "description": "响应消息",
                     "type": "string"
                 },
                 "errno": {
+                    "description": "响应码",
                     "type": "integer"
                 },
                 "stack": {
+                    "description": "堆栈信息",
                     "type": "object"
                 },
                 "trace_id": {
+                    "description": "追踪id",
                     "type": "object"
                 }
             }

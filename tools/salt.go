@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Println(test("admin", "passwd"))
+	fmt.Println(test("cjq", "passwd"))
 }
 func test(salt, password string) string {
 	s1 := sha256.New()

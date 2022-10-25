@@ -8,7 +8,6 @@ import (
 	"github.com/20gu00/gateway/dto"
 	"github.com/20gu00/gateway/middleware"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"strings"
@@ -85,15 +84,15 @@ func (oauth *AuthController) GetToken(c *gin.Context) {
 // Login godoc
 // @Summary 管理员退出
 // @Description 管理员退出
-// @Tags 管理员接口
+// @Tags admin接口
 // @ID /admin_login/logout
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /admin_login/logout [get]
-func (adminlogin *AuthController) AdminLoginOut(c *gin.Context) {
-	sess := sessions.Default(c)
-	sess.Delete(common.SessionKey)
-	sess.Save()
-	middleware.ResponseSuccess(c, "")
-}
+//func (adminlogin *AuthController) AdminLoginOut(c *gin.Context) {
+//	sess := sessions.Default(c)
+//	sess.Delete(common.SessionKey)
+//	sess.Save()
+//	middleware.ResponseSuccess(c, "")
+//}

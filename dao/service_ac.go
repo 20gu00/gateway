@@ -28,7 +28,7 @@ func (a *AccessControl) Find(ctx *gin.Context, tx *gorm.DB, search *AccessContro
 }
 
 func (a *AccessControl) Save(ctx *gin.Context, tx *gorm.DB) error {
-	if err := tx.SetCtx(common.GetGinTraceContext(ctx)).Save(ctx).Error; err != nil { //在数据库中保存更新值，如果该值没有主键，将插入它。
+	if err := tx.SetCtx(common.GetGinTraceContext(ctx)).Save(a).Error; err != nil { //在数据库中保存更新值，如果该值没有主键，将插入它。
 		return err
 	}
 	return nil

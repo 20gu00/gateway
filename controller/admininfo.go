@@ -54,8 +54,8 @@ func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 }
 
 // ChangePwd godoc
-// @Summary ChangePwd
-// @Description ChangePwd
+// @Summary 修改密码
+// @Description 修改密码
 // @Tags admin接口
 // @ID /admin/change_pwd
 // @Accept  json

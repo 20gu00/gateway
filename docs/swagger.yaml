@@ -1,4 +1,3 @@
-basePath: '{{.BasePath}}'
 definitions:
   dto.AdminLoginInput:
     properties:
@@ -60,13 +59,13 @@ definitions:
     - service_name
     - weight_list
     type: object
-  dto.ServiceAddHTTPInput:
+  dto.ServiceAddHttpInput:
     properties:
       black_list:
         description: 黑名单ip
         type: string
       clientip_flow_limit:
-        description: "\b客户端ip限流"
+        description: 客户端ip限流
         type: integer
       header_transfor:
         description: header转换
@@ -78,7 +77,7 @@ definitions:
         description: 支持https
         type: integer
       need_strip_uri:
-        description: 启用strip_uri
+        description: 启用strip_uri,注意这个功能和url重写冲突性
         type: integer
       need_websocket:
         description: 是否支持websocket
@@ -90,7 +89,7 @@ definitions:
         description: service_load_balance
         type: integer
       rule:
-        description: 域名或者前缀
+        description: 域名或者前缀(路径/add)
         type: string
       rule_type:
         description: service_http_rule
@@ -347,7 +346,7 @@ definitions:
     - app_id
     - name
     type: object
-  dto.TenantUpdateHttpInput:
+  dto.TenantUpdateInput:
     properties:
       app_id:
         type: string
@@ -387,21 +386,21 @@ definitions:
       data:
         type: object
       errmsg:
+        description: 响应消息
         type: string
       errno:
+        description: 响应码
         type: integer
       stack:
+        description: 堆栈信息
         type: object
       trace_id:
+        description: 追踪id
         type: object
     type: object
-host: '{{.Host}}'
 info:
   contact: {}
-  description: '{{.Description}}'
   license: {}
-  title: '{{.Title}}'
-  version: '{{.Version}}'
 paths:
   /admin/admin_info:
     get:
@@ -416,7 +415,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: admin信息
       tags:
       - admin接口
@@ -424,7 +422,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: ChangePwd
+      description: 修改密码
       operationId: /admin/change_pwd
       parameters:
       - description: body
@@ -433,7 +431,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ChangePwdInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -441,15 +438,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: ChangePwd
+      summary: 修改密码
       tags:
       - admin接口
   /admin_login/login:
     post:
       consumes:
       - application/json
-      description: Login
+      description: 登录
       operationId: /admin_login/login
       parameters:
       - description: body
@@ -458,7 +454,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.AdminLoginInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -466,15 +461,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: Login
+      summary: 登录
       tags:
       - admin接口
   /admin_login/logout:
     get:
       consumes:
       - application/json
-      description: 管理员退出
+      description: 退出
       operationId: /admin_login/logout
       produces:
       - application/json
@@ -483,10 +477,9 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 管理员退出
+      summary: 退出
       tags:
-      - 管理员接口
+      - admin接口
   /market/flow_stat:
     get:
       consumes:
@@ -500,10 +493,9 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 流量统计
       tags:
-      - market大盘
+      - market
   /market/panel:
     get:
       consumes:
@@ -517,7 +509,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 面板数据统计
       tags:
       - market
@@ -534,8 +525,7 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: service统计
+      summary: service按类型统计
       tags:
       - market
   /oauth/tokens:
@@ -551,7 +541,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.TokensInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -559,7 +548,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 获取token
       tags:
       - AUTH
@@ -576,7 +564,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ServiceAddGrpcInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -584,7 +571,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 添加grpc服务
       tags:
       - service管理
@@ -600,8 +586,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.ServiceAddHTTPInput'
-          type: object
+          $ref: '#/definitions/dto.ServiceAddHttpInput'
       produces:
       - application/json
       responses:
@@ -609,7 +594,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 添加HTTP服务
       tags:
       - service管理
@@ -626,7 +610,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ServiceAddTcpInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -634,7 +617,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 添加tcp服务
       tags:
       - service管理
@@ -657,7 +639,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: service删除
       tags:
       - service管理
@@ -680,7 +661,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: service详情
       tags:
       - service管理
@@ -712,7 +692,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: service列表
       tags:
       - service管理
@@ -735,8 +714,7 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: service统计
+      summary: service统计(流量)
       tags:
       - service管理
   /service/update_grpc:
@@ -752,7 +730,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ServiceUpdateGrpcInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -760,7 +737,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 更新grpc服务
       tags:
       - service管理
@@ -777,7 +753,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ServiceUpdateHTTPInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -785,7 +760,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 修改HTTP服务
       tags:
       - service管理
@@ -802,7 +776,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.ServiceUpdateTcpInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -810,7 +783,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
       summary: 更新tcp服务
       tags:
       - service管理
@@ -818,7 +790,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 租户添加
+      description: 网关租户添加
       operationId: /tenant/add
       parameters:
       - description: body
@@ -827,7 +799,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.TenantAddHttpInput'
-          type: object
       produces:
       - application/json
       responses:
@@ -835,15 +806,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户添加
+      summary: 网关租户添加
       tags:
       - tenant管理
   /tenant/delete:
     get:
       consumes:
       - application/json
-      description: 租户删除
+      description: 网关租户删除
       operationId: /tenant/delete
       parameters:
       - description: 租户ID
@@ -858,15 +828,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户删除
+      summary: 网关租户删除
       tags:
       - tenant管理
   /tenant/detail:
     get:
       consumes:
       - application/json
-      description: 租户详情
+      description: 网关租户详情
       operationId: /tenant/detail
       parameters:
       - description: 租户ID
@@ -881,22 +850,21 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户详情
+      summary: 网关租户详情
       tags:
       - tenant管理
   /tenant/list:
     get:
       consumes:
       - application/json
-      description: 租户列表
+      description: 网关租户列表
       operationId: /tenant/list
       parameters:
-      - description: 关键词
+      - description: 搜索关键词
         in: query
         name: info
         type: string
-      - description: 每页多少条
+      - description: 每页数目
         in: query
         name: page_size
         required: true
@@ -913,15 +881,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户列表
+      summary: 网关租户列表
       tags:
       - tenant管理
   /tenant/stat:
     get:
       consumes:
       - application/json
-      description: 租户统计
+      description: 网关租户统计
       operationId: /tenant/stat
       parameters:
       - description: 租户ID
@@ -936,15 +903,14 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户统计
+      summary: 网关租户统计
       tags:
       - tenant管理
   /tenant/update:
     post:
       consumes:
       - application/json
-      description: 租户更新
+      description: 网关租户更新
       operationId: /tenant/update
       parameters:
       - description: body
@@ -952,8 +918,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.TenantUpdateHttpInput'
-          type: object
+          $ref: '#/definitions/dto.TenantUpdateInput'
       produces:
       - application/json
       responses:
@@ -961,8 +926,7 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/middleware.Response'
-            type: object
-      summary: 租户更新
+      summary: 网关租户更新
       tags:
       - tenant管理
 swagger: "2.0"

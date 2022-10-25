@@ -114,7 +114,7 @@ func TranslationMiddleware() gin.HandlerFunc {
 			//自定义翻译器
 			//https://github.com/go-playground/validator/blob/v9/_examples/translations/main.go
 			val.RegisterTranslation("valid_username", trans, func(ut ut.Translator) error {
-				return ut.Add("valid_username", "{0} 填写不正确哦", true)
+				return ut.Add("valid_username", "{0} 填写不正确", true)
 			}, func(ut ut.Translator, fe validator.FieldError) string {
 				t, _ := ut.T("valid_username", fe.Field())
 				return t

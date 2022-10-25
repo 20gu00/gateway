@@ -57,7 +57,7 @@ func (oauth *AuthController) GetToken(c *gin.Context) {
 		return
 	}
 
-	appList := dao.AppManagerHandler.GetAppList()
+	appList := dao.AppManagerHandler.GetTenantList()
 	for _, appInfo := range appList {
 		if appInfo.AppID == parts[0] && appInfo.Secret == parts[1] {
 			claims := jwt.StandardClaims{

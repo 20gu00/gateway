@@ -35,7 +35,7 @@ func HTTPJwtAuthTokenMiddleware() gin.HandlerFunc {
 				return
 			}
 			//fmt.Println("claims.Issuer",claims.Issuer)
-			appList := dao.AppManagerHandler.GetAppList()
+			appList := dao.AppManagerHandler.GetTenantList()
 			for _, appInfo := range appList {
 				if appInfo.AppID == claims.Issuer {
 					c.Set("app", appInfo)

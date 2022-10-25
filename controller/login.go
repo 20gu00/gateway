@@ -86,7 +86,7 @@ func (a *AdminLoginController) Login(ctx *gin.Context) {
 // @Produce  json
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /admin_login/logout [get]
-func (adminlogin *AdminLoginController) LoginOut(ctx *gin.Context) {
+func (a *AdminLoginController) LoginOut(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Delete(common.SessionKey)
 	if err := session.Save(); err != nil {

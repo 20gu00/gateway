@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type App struct {
+type Tenant struct {
 	ID        int64     `json:"id" gorm:"primary_key"`
 	AppID     string    `json:"app_id" gorm:"column:app_id" description:"租户id	"`
 	Name      string    `json:"name" gorm:"column:name" description:"租户名称	"`
@@ -24,25 +24,25 @@ type App struct {
 	IsDelete  int8      `json:"is_delete" gorm:"column:is_delete" description:"是否已删除；0：否；1：是"`
 }
 
-func (t *App) TableName() string {
+func (t *Tenant) TableName() string {
 	return "tenant"
 }
 
-func (t *App) Find(c *gin.Context, tx *gorm.DB, search *App) (*App, error) {
-	model := &App{}
+func (t *Tenant) Find(c *gin.Context, tx *gorm.DB, search *Tenant) (*Tenant, error) {
+	model := &Tenant{}
 	err := tx.SetCtx(common.GetGinTraceContext(c)).Where(search).Find(model).Error
 	return model, err
 }
 
-func (t *App) Save(c *gin.Context, tx *gorm.DB) error {
+func (t *Tenant) Save(c *gin.Context, tx *gorm.DB) error {
 	if err := tx.SetCtx(common.GetGinTraceContext(c)).Save(t).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (t *App) APPList(c *gin.Context, tx *gorm.DB, params *dto.TenantListInput) ([]App, int64, error) {
-	var list []App
+func (t *Tenant) TenantList(c *gin.Context, tx *gorm.DB, params *dto.TenantListInput) ([]Tenant, int64, error) {
+	var list []Tenant
 	var count int64
 	pageNo := params.PageNo
 	pageSize := params.PageSize
@@ -66,36 +66,36 @@ func (t *App) APPList(c *gin.Context, tx *gorm.DB, params *dto.TenantListInput) 
 	return list, count, nil
 }
 
-var AppManagerHandler *AppManager
+var AppManagerHandler *TenantManager
 
 func init() {
-	AppManagerHandler = NewAppManager()
+	AppManagerHandler = NewTenantManager()
 }
 
-type AppManager struct {
-	AppMap   map[string]*App
-	AppSlice []*App
+type TenantManager struct {
+	AppMap   map[string]*Tenant
+	AppSlice []*Tenant
 	Locker   sync.RWMutex
 	init     sync.Once
 	err      error
 }
 
-func NewAppManager() *AppManager {
-	return &AppManager{
-		AppMap:   map[string]*App{},
-		AppSlice: []*App{},
+func NewTenantManager() *TenantManager {
+	return &TenantManager{
+		AppMap:   map[string]*Tenant{},
+		AppSlice: []*Tenant{},
 		Locker:   sync.RWMutex{},
 		init:     sync.Once{},
 	}
 }
 
-func (s *AppManager) GetAppList() []*App {
+func (s *TenantManager) GetTenantList() []*Tenant {
 	return s.AppSlice
 }
 
-func (s *AppManager) LoadOnce() error {
+func (s *TenantManager) LoadOnce() error {
 	s.init.Do(func() {
-		appInfo := &App{}
+		appInfo := &Tenant{}
 		c, _ := gin.CreateTestContext(httptest.NewRecorder())
 		tx, err := lib.GetGormPool("default")
 		if err != nil {
@@ -103,7 +103,7 @@ func (s *AppManager) LoadOnce() error {
 			return
 		}
 		params := &dto.TenantListInput{PageNo: 1, PageSize: 99999}
-		list, _, err := appInfo.APPList(c, tx, params)
+		list, _, err := appInfo.TenantList(c, tx, params)
 		if err != nil {
 			s.err = err
 			return

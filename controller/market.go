@@ -41,8 +41,8 @@ func (service *MarketController) PanelData(c *gin.Context) {
 		middleware.ResponseError(c, 2002, err)
 		return
 	}
-	app := &dao.App{}
-	_, appNum, err := app.APPList(c, tx, &dto.TenantListInput{PageNo: 1, PageSize: 1})
+	app := &dao.Tenant{}
+	_, appNum, err := app.TenantList(c, tx, &dto.TenantListInput{PageNo: 1, PageSize: 1})
 	if err != nil {
 		middleware.ResponseError(c, 2002, err)
 		return

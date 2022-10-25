@@ -16,7 +16,7 @@ func HTTPJwtFlowCountMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		appInfo := appInterface.(*dao.App)
+		appInfo := appInterface.(*dao.Tenant)
 		appCounter, err := common.FlowCounterHandler.GetCounter(common.FlowAppPrefix + appInfo.AppID)
 		if err != nil {
 			middleware.ResponseError(c, 2002, err)

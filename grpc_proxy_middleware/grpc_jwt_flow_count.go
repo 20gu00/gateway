@@ -26,7 +26,7 @@ func GrpcJwtFlowCountMiddleware(serviceDetail *dao.ServiceDetail) func(srv inter
 			return nil
 		}
 
-		appInfo := &dao.App{}
+		appInfo := &dao.Tenant{}
 		if err := json.Unmarshal([]byte(appInfos[0]), appInfo); err != nil {
 			return err
 		}

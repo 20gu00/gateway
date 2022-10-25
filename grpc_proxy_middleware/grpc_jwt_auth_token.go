@@ -29,7 +29,7 @@ func GrpcJwtAuthTokenMiddleware(serviceDetail *dao.ServiceDetail) func(srv inter
 			if err != nil {
 				return errors.WithMessage(err, "JwtDecode")
 			}
-			appList := dao.AppManagerHandler.GetAppList()
+			appList := dao.AppManagerHandler.GetTenantList()
 			for _, appInfo := range appList {
 				if appInfo.AppID == claims.Issuer {
 					md.Set("app", common.Obj2Json(appInfo))

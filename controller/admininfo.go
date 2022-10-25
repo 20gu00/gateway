@@ -63,31 +63,31 @@ func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 // @Param body body dto.ChangePwdInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /admin/change_pwd [post]
-func (adminlogin *AdminController) ChangePwd(c *gin.Context) {
+func (a *AdminController) ChangePwd(ctx *gin.Context) {
 	in := &dto.ChangePwdInput{}
-	if err := in.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+	if err := in.BindValidParam(ctx); err != nil {
+		middleware.ResponseError(ctx, 2000, err)
 		return
 	}
 
 	//修改密码逻辑,需要用户已经登录,能获取用户信息(获取session)说明用户处于登录状态
-	session := sessions.Default(c)
+	session := sessions.Default(ctx)
 	sessionInfo := session.Get(common.SessionKey)
 	adminSessionInfo := &dto.AdminSessionInfo{}
 	if err := json.Unmarshal([]byte(fmt.Sprint(sessionInfo)), adminSessionInfo); err != nil {
-		middleware.ResponseError(c, 2000, errors.New("修改密码接口使用报错,确保用户已经登录"))
+		middleware.ResponseError(ctx, 2000, errors.New("修改密码接口使用报错,确保用户已经登录"))
 		return
 	}
 
 	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c, 2001, err)
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
 	adminInfo := &dao.Admin{}
-	adminInfo, err = adminInfo.Find(c, tx, (&dao.Admin{UserName: adminSessionInfo.UserName}))
+	adminInfo, err = adminInfo.Find(ctx, tx, (&dao.Admin{UserName: adminSessionInfo.UserName}))
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
 
@@ -95,10 +95,10 @@ func (adminlogin *AdminController) ChangePwd(c *gin.Context) {
 	adminInfo.Password = saltPassword
 
 	//数据写入数据库
-	if err := adminInfo.Save(c, tx); err != nil {
-		middleware.ResponseError(c, 2003, err)
+	if err := adminInfo.Save(ctx, tx); err != nil {
+		middleware.ResponseError(ctx, 2003, err)
 		return
 	}
 
-	middleware.ResponseSuccess(c, "修改密码成功")
+	middleware.ResponseSuccess(ctx, "修改密码成功")
 }

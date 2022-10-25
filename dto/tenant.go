@@ -62,7 +62,7 @@ func (params *TenantAddHttpInput) GetValidParams(c *gin.Context) error {
 	return common.ValidDefaultParams(c, params)
 }
 
-type TenantUpdateHttpInput struct {
+type TenantUpdateInput struct {
 	ID       int64  `json:"id" form:"id" gorm:"column:id" comment:"主键ID" validate:"required"`
 	AppID    string `json:"app_id" form:"app_id" gorm:"column:app_id" comment:"租户id" validate:""`
 	Name     string `json:"name" form:"name" gorm:"column:name" comment:"租户名称" validate:"required"`
@@ -72,6 +72,6 @@ type TenantUpdateHttpInput struct {
 	Qps      int64  `json:"qps" form:"qps" gorm:"column:qps" comment:"每秒请求量限制"`
 }
 
-func (params *TenantUpdateHttpInput) GetValidParams(c *gin.Context) error {
+func (params *TenantUpdateInput) GetValidParams(c *gin.Context) error {
 	return common.ValidDefaultParams(c, params)
 }

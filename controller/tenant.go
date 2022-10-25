@@ -13,7 +13,7 @@ import (
 
 //APPControllerRegister admin路由注册
 func APPRegister(router *gin.RouterGroup) {
-	admin := APPController{}
+	admin := TenantController{}
 	router.GET("/list", admin.TenantList)
 	router.GET("/detail", admin.TenantDetail)
 	router.GET("/stat", admin.TenantStat)
@@ -22,30 +22,31 @@ func APPRegister(router *gin.RouterGroup) {
 	router.POST("/update", admin.TenantUpdate)
 }
 
-type APPController struct{}
+type TenantController struct{}
 
 // TenantList godoc
-// @Summary 租户列表
-// @Description 租户列表
+// @Summary 网关租户列表
+// @Description 网关租户列表
 // @Tags tenant管理
 // @ID /tenant/list
 // @Accept  json
 // @Produce  json
-// @Param info query string false "关键词"
-// @Param page_size query string true "每页多少条"
+// @Param info query string false "搜索关键词"
+// @Param page_size query string true "每页数目"
 // @Param page_num query string true "页码"
 // @Success 200 {object} middleware.Response{data=dto.TenantListOutput} "success"
 // @Router /tenant/list [get]
-func (admin *APPController) TenantList(c *gin.Context) {
-	params := &dto.TenantListInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+func (t *TenantController) TenantList(ctx *gin.Context) {
+	in := &dto.TenantListInput{}
+	if err := in.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
-	info := &dao.App{}
-	list, total, err := info.APPList(c, lib.GORMDefaultPool, params)
+
+	info := &dao.Tenant{}
+	list, total, err := info.TenantList(ctx, lib.GORMDefaultPool, in)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
 
@@ -53,10 +54,11 @@ func (admin *APPController) TenantList(c *gin.Context) {
 	for _, item := range list {
 		appCounter, err := common.FlowCounterHandler.GetCounter(common.FlowAppPrefix + item.AppID)
 		if err != nil {
-			middleware.ResponseError(c, 2003, err)
-			c.Abort()
+			middleware.ResponseError(ctx, 2003, err)
+			ctx.Abort()
 			return
 		}
+
 		outputList = append(outputList, dto.TenantListItemOutput{
 			ID:       item.ID,
 			AppID:    item.AppID,
@@ -73,41 +75,42 @@ func (admin *APPController) TenantList(c *gin.Context) {
 		List:  outputList,
 		Total: total,
 	}
-	middleware.ResponseSuccess(c, output)
+	middleware.ResponseSuccess(ctx, output)
 	return
 }
 
 // TenantDetail godoc
-// @Summary 租户详情
-// @Description 租户详情
+// @Summary 网关租户详情
+// @Description 网关租户详情
 // @Tags tenant管理
 // @ID /tenant/detail
 // @Accept  json
 // @Produce  json
 // @Param id query string true "租户ID"
-// @Success 200 {object} middleware.Response{data=dao.App} "success"
+// @Success 200 {object} middleware.Response{data=dao.Tenant} "success"
 // @Router /tenant/detail [get]
-func (admin *APPController) TenantDetail(c *gin.Context) {
+func (t *TenantController) TenantDetail(ctx *gin.Context) {
 	params := &dto.TenantDetailInput{}
-	if err := params.GetValidParams(c); err != nil {
-		middleware.ResponseError(c, 2001, err)
+	if err := params.GetValidParams(ctx); err != nil {
+		middleware.ResponseError(ctx, 2001, err)
 		return
 	}
-	search := &dao.App{
+
+	search := &dao.Tenant{
 		ID: params.ID,
 	}
-	detail, err := search.Find(c, lib.GORMDefaultPool, search)
+	detail, err := search.Find(ctx, lib.GORMDefaultPool, search)
 	if err != nil {
-		middleware.ResponseError(c, 2002, err)
+		middleware.ResponseError(ctx, 2002, err)
 		return
 	}
-	middleware.ResponseSuccess(c, detail)
+	middleware.ResponseSuccess(ctx, detail)
 	return
 }
 
 // TenantDelete godoc
-// @Summary 租户删除
-// @Description 租户删除
+// @Summary 网关租户删除
+// @Description 网关租户删除
 // @Tags tenant管理
 // @ID /tenant/delete
 // @Accept  json
@@ -115,13 +118,14 @@ func (admin *APPController) TenantDetail(c *gin.Context) {
 // @Param id query string true "租户ID"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /tenant/delete [get]
-func (admin *APPController) TenantDelete(c *gin.Context) {
+func (admin *TenantController) TenantDelete(c *gin.Context) {
 	params := &dto.TenantDetailInput{}
 	if err := params.GetValidParams(c); err != nil {
 		middleware.ResponseError(c, 2001, err)
 		return
 	}
-	search := &dao.App{
+
+	search := &dao.Tenant{
 		ID: params.ID,
 	}
 	info, err := search.Find(c, lib.GORMDefaultPool, search)
@@ -129,18 +133,20 @@ func (admin *APPController) TenantDelete(c *gin.Context) {
 		middleware.ResponseError(c, 2002, err)
 		return
 	}
+
 	info.IsDelete = 1
 	if err := info.Save(c, lib.GORMDefaultPool); err != nil {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, "")
+
+	middleware.ResponseSuccess(c, "网关租户删除成功")
 	return
 }
 
 // TenantAdd godoc
-// @Summary 租户添加
-// @Description 租户添加
+// @Summary 网关租户添加
+// @Description 网关租户添加
 // @Tags tenant管理
 // @ID /tenant/add
 // @Accept  json
@@ -148,7 +154,7 @@ func (admin *APPController) TenantDelete(c *gin.Context) {
 // @Param body body dto.TenantAddHttpInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /tenant/add [post]
-func (admin *APPController) TenantAdd(c *gin.Context) {
+func (admin *TenantController) TenantAdd(c *gin.Context) {
 	params := &dto.TenantAddHttpInput{}
 	if err := params.GetValidParams(c); err != nil {
 		middleware.ResponseError(c, 2001, err)
@@ -156,18 +162,21 @@ func (admin *APPController) TenantAdd(c *gin.Context) {
 	}
 
 	//验证app_id是否被占用
-	search := &dao.App{
+	search := &dao.Tenant{
 		AppID: params.AppID,
 	}
 	if _, err := search.Find(c, lib.GORMDefaultPool, search); err == nil {
 		middleware.ResponseError(c, 2002, errors.New("租户ID被占用，请重新输入"))
 		return
 	}
+
 	if params.Secret == "" {
+		//生成secret
 		params.Secret = common.MD5(params.AppID)
 	}
+
 	tx := lib.GORMDefaultPool
-	info := &dao.App{
+	info := &dao.Tenant{
 		AppID:    params.AppID,
 		Name:     params.Name,
 		Secret:   params.Secret,
@@ -179,27 +188,28 @@ func (admin *APPController) TenantAdd(c *gin.Context) {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, "")
+
+	middleware.ResponseSuccess(c, "添加网关的租户成功")
 	return
 }
 
 // TenantUpdate godoc
-// @Summary 租户更新
-// @Description 租户更新
+// @Summary 网关租户更新
+// @Description 网关租户更新
 // @Tags tenant管理
 // @ID /tenant/update
 // @Accept  json
 // @Produce  json
-// @Param body body dto.TenantUpdateHttpInput true "body"
+// @Param body body dto.TenantUpdateInput true "body"
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /tenant/update [post]
-func (admin *APPController) TenantUpdate(c *gin.Context) {
-	params := &dto.TenantUpdateHttpInput{}
+func (admin *TenantController) TenantUpdate(c *gin.Context) {
+	params := &dto.TenantUpdateInput{}
 	if err := params.GetValidParams(c); err != nil {
 		middleware.ResponseError(c, 2001, err)
 		return
 	}
-	search := &dao.App{
+	search := &dao.Tenant{
 		ID: params.ID,
 	}
 	info, err := search.Find(c, lib.GORMDefaultPool, search)
@@ -219,13 +229,13 @@ func (admin *APPController) TenantUpdate(c *gin.Context) {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
-	middleware.ResponseSuccess(c, "")
+	middleware.ResponseSuccess(c, "修改网关租户配置成功")
 	return
 }
 
 // TenantStat godoc
-// @Summary 租户统计
-// @Description 租户统计
+// @Summary 网关租户统计
+// @Description 网关租户统计
 // @Tags tenant管理
 // @ID /tenant/stat
 // @Accept  json
@@ -233,14 +243,14 @@ func (admin *APPController) TenantUpdate(c *gin.Context) {
 // @Param id query string true "租户ID"
 // @Success 200 {object} middleware.Response{data=dto.StatisticsOutput} "success"
 // @Router /tenant/stat [get]
-func (admin *APPController) TenantStat(c *gin.Context) {
+func (admin *TenantController) TenantStat(c *gin.Context) {
 	params := &dto.TenantDetailInput{}
 	if err := params.GetValidParams(c); err != nil {
 		middleware.ResponseError(c, 2001, err)
 		return
 	}
 
-	search := &dao.App{
+	search := &dao.Tenant{
 		ID: params.ID,
 	}
 	detail, err := search.Find(c, lib.GORMDefaultPool, search)

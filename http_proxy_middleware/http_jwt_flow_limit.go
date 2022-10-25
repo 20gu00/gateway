@@ -16,7 +16,7 @@ func HTTPJwtFlowLimitMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		appInfo := appInterface.(*dao.App)
+		appInfo := appInterface.(*dao.Tenant)
 		if appInfo.Qps > 0 {
 			clientLimiter, err := common.FlowLimiterHandler.GetLimiter(
 				common.FlowAppPrefix+appInfo.AppID+"_"+c.ClientIP(),

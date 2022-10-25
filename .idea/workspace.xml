@@ -6,22 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/admininfo.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/admininfo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/login.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/login.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/market.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/market.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dao/service_ac.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service_ac.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/docs.go" beforeDir="false" afterPath="$PROJECT_DIR$/docs/docs.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/swagger.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dto/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/dto/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102412" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102412" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102413" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log.2022102413" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/middleware/translation.go" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/translation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/file" beforeDir="false" afterPath="$PROJECT_DIR$/tools/file" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/salt.go" beforeDir="false" afterPath="$PROJECT_DIR$/tools/salt.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,27 +48,8 @@
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/gateway_test" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="vue.rearranger.settings.migration" value="true" />
-  </component>
-  <component name="RunManager">
-    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
-      <module name="gateway" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
-      <module name="gateway" />
-      <working_directory value="$PROJECT_DIR$" />
-      <kind value="DIRECTORY" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <method v="2" />
-    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

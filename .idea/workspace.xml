@@ -5,33 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
-      <change afterPath="$PROJECT_DIR$/httprouter/route.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/const.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/const.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/flowcount.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/flowcount.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/flowcount_redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/flowcount_redis.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/dev/proxy.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dev/proxy.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dao/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dao/tenant.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/tenant.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_access_mode.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/accessmode.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_black_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/blackip.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/flowstat.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/flowlimit.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_header_transfer.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/headertransfer.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_auth_token.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/jwtauth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/jwtflowcount.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_jwt_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/jwtflowlimit.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/reverseproxy.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_strip_uri.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/stripuri.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_url_rewrite.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/urlrewrite.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_middleware/http_white_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpmiddleware/whiteip.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_router/httpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/httprouter/httpserver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http_proxy_router/route.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/docs.go" beforeDir="false" afterPath="$PROJECT_DIR$/docs/docs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dto/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/dto/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/httprouter/route.go" beforeDir="false" afterPath="$PROJECT_DIR$/httprouter/route.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/middleware/recovery.go" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/recovery.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/middleware/request_log.go" beforeDir="false" afterPath="$PROJECT_DIR$/middleware/request_log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reverse_proxy/http_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/reverse_proxy/http_reverse_proxy.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reverse_proxy/tcp_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/reverse_proxy/tcp_reverse_proxy.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_black_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/blackip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/flowcount.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/flowlimit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_slice_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/slicerouter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_white_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/whiteip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_proxy_router/tcpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcprouter/tcpserver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_server/tcp_conn.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp_server/tcp_conn.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp_server/tcp_server.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp_server/tcp_server.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/file" beforeDir="false" afterPath="$PROJECT_DIR$/tools/file" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -77,6 +68,12 @@
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/tools" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

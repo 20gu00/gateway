@@ -1,4 +1,4 @@
-package tcp_proxy_middleware
+package tcpmiddleware
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+//客户端流量控制,服务流量控制
 func TCPFlowLimitMiddleware() func(c *TcpSliceRouterContext) {
 	return func(c *TcpSliceRouterContext) {
 		serverInterface := c.Get("service")

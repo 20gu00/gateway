@@ -21,3 +21,38 @@ http2传输的是二进制而不是文本,可以实现一个连接多路复用,�
 swag1.6.5
 
 X-Real-IP和X-Forwarded-For,前者可信,后者可以伪造,前者客户端即请求发起端的ip,后者是前一台机器的ip不断组成的切片
+
+凭证式令牌,后端基于凭证认证,基于用户,clientid+secret,一个用户可以多个租户
+
+client--发账号密码申请token-->网关jwt生成token--返回token-->client--将token放进请求头访问网关-->网关中间件教研token,权限校验-->返回数据给client
+
+提高性能,我将数据库等信息一次性加载到内存中,如果有不合理的操作比如直接手动修改数据库,那么修改的数据需要重启服务才能获取
+
+添加租户,secret可以自动生成
+
+tcp代理 四层
+
+七层代理 两次三次握手
+四层代理 客户端和服务器直连 中间snat  代理数据直接进入程序的buffer中 (redis mysql)
+tcp服务器 代理 -> 负载均衡
+流量统计器限流器(流量限速)负载均衡器都是单例方式,一个服务一个,负载均衡包括检测服务是否就绪
+http代理基于原生的http服务实现
+
+测试/auth/token:
+    postman: auth->base auth->username,passwd
+             body->x-www-form-urlencoded->grant_type client_credentials和scope read_write
+    appid->username secret->password
+
+curl 'http://tenant_2:44e984cf2dd07f21145c1776d38dd406@127.0.0.1:8080/auth/token' -d 'grant_type=client_credentials&scope=read_write'
+curl 'http://127.0.0.1:8080/auth/token' -u tenant_2:44e984cf2dd07f21145c1776d38dd406 -d 'grant_type=client_credentials&scope=read_write'
+
+curl --location --request POST 'http://127.0.0.1:8080/auth/token' \
+--header 'Authorization: Basic Og==' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials' \
+--data-urlencode 'scope=read_write'
+
+连接tcp服务 telnet 127.0.0.1 2002
+
+nginx的upstream
+数据源->源头->上游->下游->用户

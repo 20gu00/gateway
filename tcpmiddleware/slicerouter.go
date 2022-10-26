@@ -1,4 +1,4 @@
-package tcp_proxy_middleware
+package tcpmiddleware
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 
 const abortIndex int8 = math.MaxInt8 / 2 //最多 63 个中间件
 
-//知其然也知其所以然
 type TcpHandlerFunc func(*TcpSliceRouterContext)
 
 // router 结构体
@@ -35,7 +34,7 @@ type TcpSliceRouterContext struct {
 func newTcpSliceRouterContext(conn net.Conn, r *TcpSliceRouter, ctx context.Context) *TcpSliceRouterContext {
 	newTcpSliceGroup := &TcpSliceGroup{}
 	*newTcpSliceGroup = *r.groups[0] //浅拷贝数组指针,只会使用第一个分组
-	c := &TcpSliceRouterContext{conn: conn, TcpSliceGroup: newTcpSliceGroup, Ctx: ctx,}
+	c := &TcpSliceRouterContext{conn: conn, TcpSliceGroup: newTcpSliceGroup, Ctx: ctx}
 	c.Reset()
 	return c
 }

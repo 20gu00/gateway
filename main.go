@@ -7,7 +7,8 @@ import (
 	"github.com/20gu00/gateway/grpc_proxy_router"
 	"github.com/20gu00/gateway/httprouter"
 	"github.com/20gu00/gateway/router"
-	"github.com/20gu00/gateway/tcp_proxy_router"
+	//"github.com/20gu00/gateway/tcp_proxy_router"
+	"github.com/20gu00/gateway/tcprouter"
 	"os"
 	"os/signal"
 	"syscall"
@@ -53,7 +54,7 @@ func main() {
 			httprouter.HttpsServerRun() //https
 		}()
 		go func() {
-			tcp_proxy_router.TcpServerRun() //tcp
+			tcprouter.TcpServerRun() //tcp
 		}()
 		go func() {
 			grpc_proxy_router.GrpcServerRun() //grpc
@@ -65,7 +66,7 @@ func main() {
 		<-quit
 
 		//关闭可以依次
-		tcp_proxy_router.TcpServerStop()
+		tcprouter.TcpServerStop()
 		grpc_proxy_router.GrpcServerStop()
 		httprouter.HttpServerStop()
 		httprouter.HttpsServerStop()

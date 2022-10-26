@@ -19,14 +19,16 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		})
 	})
 
-	//路由组
-	oauth := router.Group("/oauth")
-	oauth.Use(middleware.TranslationMiddleware())
+	//路由组,再注册子路由
+	//先匹配
+	oauth := router.Group("/auth")
+	oauth.Use(middleware.TranslationMiddleware()) //多语言转换中间件
 	{
 		controller.AuthRegister(oauth)
 	}
 
 	//全局中间件,一系列handlefunc(洋葱)
+	//oauth := router.Group("/")
 	router.Use(
 		httpmiddleware.HttpAccessModeMiddleware(),     //域名还是前缀
 		httpmiddleware.HttpFlowCountMiddleware(),      //流量统计

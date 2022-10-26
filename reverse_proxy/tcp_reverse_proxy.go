@@ -3,16 +3,18 @@ package reverse_proxy
 import (
 	"context"
 	"github.com/20gu00/gateway/reverse_proxy/load_balance"
-	"github.com/20gu00/gateway/tcp_proxy_middleware"
+	"github.com/20gu00/gateway/tcpmiddleware"
 	"io"
 	"log"
 	"net"
 	"time"
 )
 
-func NewTcpLoadBalanceReverseProxy(c *tcp_proxy_middleware.TcpSliceRouterContext, lb load_balance.LoadBalance) *TcpReverseProxy {
+//新建个tc代理服务器,支持负载均衡
+//往负载均衡器中添加服务器的地址,在这个代理过程中,服务器属于上游,但从数据源的过程来看,也可以是下游
+func NewTcpLoadBalanceReverseProxy(c *tcpmiddleware.TcpSliceRouterContext, lb load_balance.LoadBalance) *TcpReverseProxy {
 	return func() *TcpReverseProxy {
-		nextAddr, err := lb.Get("")
+		nextAddr, err := lb.Get("") //获取下游的地址
 		if err != nil {
 			log.Fatal("get next addr fail")
 		}
@@ -62,14 +64,14 @@ func (dp *TcpReverseProxy) keepAlivePeriod() time.Duration {
 	return time.Minute
 }
 
-//传入上游 conn，在这里完成下游连接与数据交换
+//传入上游 conn，在这里完成下游连接与数据交换 src-访问->dst
 func (dp *TcpReverseProxy) ServeTCP(ctx context.Context, src net.Conn) {
-	//设置连接超时
+	//设置连接超时,设置context超时
 	var cancel context.CancelFunc
 	if dp.DialTimeout >= 0 {
 		ctx, cancel = context.WithTimeout(ctx, dp.dialTimeout())
 	}
-	dst, err := dp.dialContext()(ctx, "tcp", dp.Addr)
+	dst, err := dp.dialContext()(ctx, "tcp", dp.Addr) //下游地址
 	if cancel != nil {
 		cancel()
 	}
@@ -78,16 +80,17 @@ func (dp *TcpReverseProxy) ServeTCP(ctx context.Context, src net.Conn) {
 		return
 	}
 
-	defer func() { go dst.Close() }() //记得退出下游连接
+	defer func() { go dst.Close() }() //关闭下游连接(客户端)
 
-	//设置dst的 keepAlive 参数,在数据请求之前
+	//设置dst连接
 	if ka := dp.keepAlivePeriod(); ka > 0 {
-		if c, ok := dst.(*net.TCPConn); ok {
-			c.SetKeepAlive(true)
-			c.SetKeepAlivePeriod(ka)
+		if c, ok := dst.(*net.TCPConn); ok { //tcp连接
+			c.SetKeepAlive(true)     //设置tcp连接为长连接
+			c.SetKeepAlivePeriod(ka) //保持连接的周期
 		}
 	}
-	errc := make(chan error, 1)
+	errc := make(chan error, 1) //缓存1
+	//上游下游数据交换
 	go dp.proxyCopy(errc, src, dst)
 	go dp.proxyCopy(errc, dst, src)
 	<-errc
@@ -104,6 +107,6 @@ func (dp *TcpReverseProxy) onDialError() func(src net.Conn, dstDialErr error) {
 }
 
 func (dp *TcpReverseProxy) proxyCopy(errc chan<- error, dst, src net.Conn) {
-	_, err := io.Copy(dst, src)
+	_, err := io.Copy(dst, src) //数据拷贝,两个socker传输数据
 	errc <- err
 }

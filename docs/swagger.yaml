@@ -367,20 +367,6 @@ definitions:
     - name
     - secret
     type: object
-  dto.TokensInput:
-    properties:
-      grant_type:
-        description: 授权类型
-        example: client_credentials
-        type: string
-      scope:
-        description: 权限范围
-        example: read_write
-        type: string
-    required:
-    - grant_type
-    - scope
-    type: object
   middleware.Response:
     properties:
       data:
@@ -528,29 +514,6 @@ paths:
       summary: service按类型统计
       tags:
       - market
-  /oauth/tokens:
-    post:
-      consumes:
-      - application/json
-      description: 获取token
-      operationId: /oauth/token
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.TokensInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: 获取token
-      tags:
-      - AUTH
   /service/add_grpc:
     post:
       consumes:

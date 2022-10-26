@@ -195,41 +195,6 @@
                 }
             }
         },
-        "/oauth/tokens": {
-            "post": {
-                "description": "获取token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "AUTH"
-                ],
-                "summary": "获取token",
-                "operationId": "/oauth/token",
-                "parameters": [
-                    {
-                        "description": "body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.TokensInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/service/add_grpc": {
             "post": {
                 "description": "添加grpc服务",
@@ -1313,25 +1278,6 @@
                 },
                 "white_ips": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.TokensInput": {
-            "type": "object",
-            "required": [
-                "grant_type",
-                "scope"
-            ],
-            "properties": {
-                "grant_type": {
-                    "description": "授权类型",
-                    "type": "string",
-                    "example": "client_credentials"
-                },
-                "scope": {
-                    "description": "权限范围",
-                    "type": "string",
-                    "example": "read_write"
                 }
             }
         },

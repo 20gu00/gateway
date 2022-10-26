@@ -1,4 +1,4 @@
-package tcp_proxy_middleware
+package tcpmiddleware
 
 import (
 	"github.com/20gu00/gateway/common"

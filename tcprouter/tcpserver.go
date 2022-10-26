@@ -1,15 +1,17 @@
-package tcp_proxy_router
+package tcprouter
 
 import (
 	"context"
 	"fmt"
 	"github.com/20gu00/gateway/dao"
 	"github.com/20gu00/gateway/reverse_proxy"
-	"github.com/20gu00/gateway/tcp_proxy_middleware"
 	"github.com/20gu00/gateway/tcp_server"
+	"github.com/20gu00/gateway/tcpmiddleware"
 	"log"
 	"net"
 )
+
+//网关的tcp代理服务(负载均衡),接入方式port
 
 var tcpServerList = []*tcp_server.TcpServer{}
 
@@ -33,17 +35,17 @@ func TcpServerRun() {
 			}
 
 			//构建路由及设置中间件
-			router := tcp_proxy_middleware.NewTcpSliceRouter()
+			router := tcpmiddleware.NewTcpSliceRouter()
 			router.Group("/").Use(
-				tcp_proxy_middleware.TCPFlowCountMiddleware(),
-				tcp_proxy_middleware.TCPFlowLimitMiddleware(),
-				tcp_proxy_middleware.TCPWhiteListMiddleware(),
-				tcp_proxy_middleware.TCPBlackListMiddleware(),
+				tcpmiddleware.TCPFlowCountMiddleware(),
+				tcpmiddleware.TCPFlowLimitMiddleware(),
+				tcpmiddleware.TCPWhiteListMiddleware(),
+				tcpmiddleware.TCPBlackListMiddleware(),
 			)
 
 			//构建回调handler
-			routerHandler := tcp_proxy_middleware.NewTcpSliceRouterHandler(
-				func(c *tcp_proxy_middleware.TcpSliceRouterContext) tcp_server.TCPHandler {
+			routerHandler := tcpmiddleware.NewTcpSliceRouterHandler(
+				func(c *tcpmiddleware.TcpSliceRouterContext) tcp_server.TCPHandler {
 					return reverse_proxy.NewTcpLoadBalanceReverseProxy(c, rb)
 				}, router)
 

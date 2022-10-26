@@ -17,8 +17,8 @@ import (
 type AuthController struct{}
 
 func AuthRegister(group *gin.RouterGroup) {
-	oauth := &AuthController{}
-	group.POST("/token", oauth.GetToken)
+	auth := &AuthController{}
+	group.POST("/token", auth.GetToken)
 }
 
 // GetToken godoc
@@ -30,7 +30,9 @@ func AuthRegister(group *gin.RouterGroup) {
 // @Produce  json
 // @Param body body dto.TokensInput true "body"
 // @Success 200 {object} middleware.Response{data=dto.TokensOutput} "success"
-// @Router /oauth/tokens [post]
+// @Router /auth/tokens [post]
+
+//获取token属于代理逻辑,不是后台管理系统的逻辑
 func (oauth *AuthController) GetToken(c *gin.Context) {
 	params := &dto.TokensInput{}
 	if err := params.BindValidParam(c); err != nil {
@@ -38,13 +40,14 @@ func (oauth *AuthController) GetToken(c *gin.Context) {
 		return
 	}
 
+	//Authorization: Beare (usernamepassword)
 	splits := strings.Split(c.GetHeader("Authorization"), " ")
 	if len(splits) != 2 {
-		middleware.ResponseError(c, 2001, errors.New("用户名或密码格式错误"))
+		middleware.ResponseError(c, 2001, errors.New("Authorization格式错误"))
 		return
 	}
 
-	appSecret, err := base64.StdEncoding.DecodeString(splits[1])
+	appSecret, err := base64.StdEncoding.DecodeString(splits[1]) //base64解码
 	if err != nil {
 		middleware.ResponseError(c, 2002, err)
 		return
@@ -59,7 +62,7 @@ func (oauth *AuthController) GetToken(c *gin.Context) {
 	appList := dao.AppManagerHandler.GetTenantList()
 	for _, appInfo := range appList {
 		if appInfo.AppID == parts[0] && appInfo.Secret == parts[1] {
-			claims := jwt.StandardClaims{
+			claims := jwt.StandardClaims{ //标准jwt的字段
 				Issuer:    appInfo.AppID,
 				ExpiresAt: time.Now().Add(common.JwtExpires * time.Second).In(lib.TimeLocation).Unix(),
 			}

@@ -2,8 +2,8 @@ package tcp_server
 
 import (
 	"context"
-	"fmt"
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -42,9 +42,9 @@ type TcpServer struct {
 	err     error
 	BaseCtx context.Context
 
-	WriteTimeout     time.Duration
-	ReadTimeout      time.Duration
-	KeepAliveTimeout time.Duration
+	WriteTimeout     time.Duration //写buf数据的超时时间
+	ReadTimeout      time.Duration //读取buf数据的超时时间
+	KeepAliveTimeout time.Duration //长连接超时时间
 
 	mu         sync.Mutex
 	inShutdown int32
@@ -53,6 +53,7 @@ type TcpServer struct {
 }
 
 func (s *TcpServer) shuttingDown() bool {
+	//判断服务是否关闭,原子操作看这个值是否等于0即关闭
 	return atomic.LoadInt32(&s.inShutdown) != 0
 }
 
@@ -67,11 +68,13 @@ func (srv *TcpServer) ListenAndServe() error {
 	if addr == "" {
 		return errors.New("need addr")
 	}
-	ln, err := net.Listen("tcp", addr)
+	ln, err := net.Listen("tcp", addr) //建立链接,监听该地址
 	if err != nil {
 		return err
 	}
-	return srv.Serve(tcpKeepAliveListener{
+
+	//提供服务(需要一个连接listner)
+	return srv.Serve(tcpKeepAliveListener{ //将这个监听地址设置到长连接中
 		ln.(*net.TCPListener)})
 }
 
@@ -83,15 +86,16 @@ func (srv *TcpServer) Close() error {
 }
 
 func (srv *TcpServer) Serve(l net.Listener) error {
-	srv.l = &onceCloseListener{Listener: l}
-	defer srv.l.Close() //执行listener关闭
+	srv.l = &onceCloseListener{Listener: l} //只执行一次关闭
+	defer srv.l.Close()                     //关闭listener
 	if srv.BaseCtx == nil {
 		srv.BaseCtx = context.Background()
 	}
 	baseCtx := srv.BaseCtx
+	//将tcp server放进context
 	ctx := context.WithValue(baseCtx, ServerContextKey, srv)
 	for {
-		rw, e := l.Accept()
+		rw, e := l.Accept() //不断读取客户端发送过来的连接
 		if e != nil {
 			select {
 			case <-srv.getDoneChan():
@@ -101,8 +105,10 @@ func (srv *TcpServer) Serve(l net.Listener) error {
 			fmt.Printf("accept fail, err: %v\n", e)
 			continue
 		}
+
+		//根据获取的connection建立新的自定义的connection,
 		c := srv.newConn(rw)
-		go c.serve(ctx)
+		go c.serve(ctx) //根据这个连接提供服务
 	}
 	return nil
 }
@@ -110,7 +116,7 @@ func (srv *TcpServer) Serve(l net.Listener) error {
 func (srv *TcpServer) newConn(rwc net.Conn) *conn {
 	c := &conn{
 		server: srv,
-		rwc:    rwc,
+		rwc:    rwc, //下游的连接,客户端
 	}
 	// 设置参数
 	if d := c.server.ReadTimeout; d != 0 {
@@ -138,6 +144,6 @@ func (s *TcpServer) getDoneChan() <-chan struct{} {
 }
 
 func ListenAndServe(addr string, handler TCPHandler) error {
-	server := &TcpServer{Addr: addr, Handler: handler, doneChan: make(chan struct{}),}
+	server := &TcpServer{Addr: addr, Handler: handler, doneChan: make(chan struct{})}
 	return server.ListenAndServe()
 }

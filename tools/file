@@ -59,3 +59,34 @@ nginx的upstream
 
 tcp代理测试:
     telnet 127.0.0.1 8021
+
+grpc:
+    rpc基于http2,七层
+    安装:github.com/grpc/grpc-go  go get -u google.golang.org/grpc
+    protoc编译器和protoc-gen-go安装,官网(proto protoc-gen-go protoc-gen-go-grpc)
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+    go get github.com/golang/protobuf/proto
+
+    IDL protoc --go_out=. --go_opt=paths=source_relative \
+            --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+            helloworld/helloworld.proto
+    protoc --go_out=. --go-grpc_out=. proto/test.proto
+
+    实现支持http访问
+    支持普通rpc和双向流式传递
+    连接多路复用,header(metadata)传递
+    加密tls可选
+    data是proto buffer(数据传递都是)
+    grpc-gateway让rpc变为http,传递json
+
+    实现grpc透明代理难点:
+        本身的grpc-gateway需要借助结构体转换
+        使用tcp代理对grpc管控不够方便
+        grcp的发送接收基于idl
+        要实现非结构体转换和方法管控的代理
+
+    grpc代理实现点:
+    自定义编码codec和编码规则CustomCodec(支持原始字节和proto的解码器,原始字节不需要解码,不是原始字节就通过proto转换)(构建输出方法,设置到server参数中)(grpc-proxy实现了解码和未知回调)
+    自定义位置方法回调UnknownServiceHandler
+    基于自定义回调可以对请求实现方法级的管控

@@ -2,10 +2,10 @@ package grpcrouter
 
 import (
 	"fmt"
+	"github.com/20gu00/gateway/common/grpc-proxy/proxy"
 	"github.com/20gu00/gateway/dao"
 	"github.com/20gu00/gateway/grpcmiddleware"
 	"github.com/20gu00/gateway/reverse_proxy"
-	"github.com/e421083458/grpc-proxy/proxy"
 	"google.golang.org/grpc"
 	"log"
 	"net"

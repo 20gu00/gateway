@@ -8,6 +8,7 @@ import (
 	"net"
 )
 
+//os获取系统信息
 var (
 	addr = ":7002" //本地
 )

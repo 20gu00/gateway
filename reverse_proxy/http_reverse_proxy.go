@@ -14,7 +14,6 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 	//请求协调者
 	director := func(req *http.Request) {
 		nextAddr, err := lb.Get(req.URL.String())
-		//todo 优化点3
 		if err != nil || nextAddr == "" {
 			panic("get next addr fail")
 		}
@@ -42,30 +41,6 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 		if strings.Contains(resp.Header.Get("Connection"), "Upgrade") { //判断Upgrade是否在connection中,协议升级,ws
 			return nil
 		}
-
-		//todo 优化点2
-		//var payload []byte
-		//var readErr error
-		//
-		//if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
-		//	gr, err := gzip.NewReader(resp.Body)
-		//	if err != nil {
-		//		return err
-		//	}
-		//	payload, readErr = ioutil.ReadAll(gr)
-		//	resp.Header.Del("Content-Encoding")
-		//} else {
-		//	payload, readErr = ioutil.ReadAll(resp.Body)
-		//}
-		//if readErr != nil {
-		//	return readErr
-		//}
-		//
-		//c.Set("status_code", resp.StatusCode)
-		//c.Set("payload", payload)
-		//resp.Body = ioutil.NopCloser(bytes.NewBuffer(payload))
-		//resp.ContentLength = int64(len(payload))
-		//resp.Header.Set("Content-Length", strconv.FormatInt(int64(len(payload)), 10))
 		return nil
 	}
 

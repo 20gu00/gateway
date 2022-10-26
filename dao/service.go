@@ -11,6 +11,14 @@ import (
 	"sync"
 )
 
+type ServiceManager struct {
+	ServiceMap   map[string]*ServiceDetail //原生map非线程安全,需要加锁,写入map如果有县城读取map出错(map查询效率高)
+	ServiceSlice []*ServiceDetail          //减少锁的开销
+	Locker       sync.RWMutex
+	init         sync.Once
+	err          error //Once中的错误
+}
+
 type ServiceDetail struct {
 	ServiceInfo   *ServiceInfo   `json:"serviceInfo" description:"service的基本信息"`
 	HTTPRule      *HttpRule      `json:"http_rule" description:"http_rule表"`
@@ -22,17 +30,9 @@ type ServiceDetail struct {
 
 var ServiceManagerHandler *ServiceManager
 
-//调用这个包时直接会初始化
+//调用这个包时直接初始化
 func init() {
 	ServiceManagerHandler = NewServiceManager()
-}
-
-type ServiceManager struct {
-	ServiceMap   map[string]*ServiceDetail
-	ServiceSlice []*ServiceDetail
-	Locker       sync.RWMutex
-	init         sync.Once
-	err          error //Once中的错误
 }
 
 //新建个servicemanager,用来处理service

@@ -5,16 +5,13 @@ import (
 	"github.com/20gu00/gateway/common/lib"
 	"github.com/20gu00/gateway/dao"
 	"github.com/20gu00/gateway/grpc_proxy_router"
-	"github.com/20gu00/gateway/http_proxy_router"
+	"github.com/20gu00/gateway/httprouter"
 	"github.com/20gu00/gateway/router"
 	"github.com/20gu00/gateway/tcp_proxy_router"
 	"os"
 	"os/signal"
 	"syscall"
 )
-
-//endpoint dashboard后台管理  server代理服务器
-//config ./conf/prod/ 对应配置文件夹
 
 var (
 	endpoint = flag.String("endpoint", "", "input endpoint dashboard or server")
@@ -48,26 +45,29 @@ func main() {
 		dao.ServiceManagerHandler.LoadOnce()
 		dao.AppManagerHandler.LoadOnce()
 
+		//多个代理服务器
 		go func() {
-			http_proxy_router.HttpServerRun()
+			httprouter.HttpServerRun() //http
 		}()
 		go func() {
-			http_proxy_router.HttpsServerRun()
+			httprouter.HttpsServerRun() //https
 		}()
 		go func() {
-			tcp_proxy_router.TcpServerRun()
+			tcp_proxy_router.TcpServerRun() //tcp
 		}()
 		go func() {
-			grpc_proxy_router.GrpcServerRun()
+			grpc_proxy_router.GrpcServerRun() //grpc
 		}()
 
+		//接收系统信号,优雅关闭
 		quit := make(chan os.Signal)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) //中止,强制终止
 		<-quit
 
+		//关闭可以依次
 		tcp_proxy_router.TcpServerStop()
 		grpc_proxy_router.GrpcServerStop()
-		http_proxy_router.HttpServerStop()
-		http_proxy_router.HttpsServerStop()
+		httprouter.HttpServerStop()
+		httprouter.HttpsServerStop()
 	}
 }

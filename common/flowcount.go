@@ -28,7 +28,7 @@ func init() {
 
 //获取一个统计器
 func (counter *FlowCounter) GetCounter(serverName string) (*RedisFlowCountService, error) {
-	for _, item := range counter.RedisFlowCountSlice {
+	for _, item := range counter.RedisFlowCountSlice { //全部统计器的统计业务
 		if item.AppID == serverName {
 			return item, nil //返回该被统计流量的服务的流量信息
 		}

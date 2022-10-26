@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+//统一处理请求处理的日志
+
 // 请求进入日志
 func RequestInLog(c *gin.Context) {
 	traceContext := lib.NewTrace()

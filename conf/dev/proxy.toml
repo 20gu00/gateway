@@ -1,7 +1,7 @@
 # This is base config
 
 [base]
-    debug_mode="release"
+    debug_mode="release"  #发行
     time_location="Asia/Chongqing"
 
 [http]

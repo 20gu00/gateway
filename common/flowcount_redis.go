@@ -10,7 +10,7 @@ import (
 
 //流量统计功能,代理使用,分布式流量统计,直接处理redis数据
 type RedisFlowCountService struct {
-	AppID       string        //流量统计器租户id
+	AppID       string        //流量统计器租户id(非网关租户)
 	Interval    time.Duration //统计间隔,刷新频率
 	QPS         int64         //每秒请求量
 	Unix        int64
@@ -18,7 +18,7 @@ type RedisFlowCountService struct {
 	TotalCount  int64 //总数
 }
 
-//创建服务的流量统计的服务
+//创建流量统计的服务,统计功能实现
 func NewRedisFlowCountService(appID string, interval time.Duration) *RedisFlowCountService {
 	reqCounter := &RedisFlowCountService{
 		AppID:    appID,
@@ -88,7 +88,7 @@ func (o *RedisFlowCountService) GetDayKey(t time.Time) string {
 	//time.LoadLocation("Asia/Shanghai")
 	dayStr := t.In(lib.TimeLocation).Format("20060102")
 	//组装rediskey
-	//日流量前缀+天的时间的字符串+服务流量统计前缀+服务名称
+	//日流量前缀+天的时间的字符串+流量统计前缀+服务名称
 	return fmt.Sprintf("%s_%s_%s", RedisFlowDayKey, dayStr, o.AppID) //日流量前缀
 }
 

@@ -1,9 +1,9 @@
-package grpc_proxy_router
+package grpcrouter
 
 import (
 	"fmt"
 	"github.com/20gu00/gateway/dao"
-	"github.com/20gu00/gateway/grpc_proxy_middleware"
+	"github.com/20gu00/gateway/grpcmiddleware"
 	"github.com/20gu00/gateway/reverse_proxy"
 	"github.com/e421083458/grpc-proxy/proxy"
 	"google.golang.org/grpc"
@@ -36,14 +36,14 @@ func GrpcServerRun() {
 			grpcHandler := reverse_proxy.NewGrpcLoadBalanceHandler(rb)
 			s := grpc.NewServer(
 				grpc.ChainStreamInterceptor(
-					grpc_proxy_middleware.GrpcFlowCountMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcFlowLimitMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcJwtAuthTokenMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcJwtFlowCountMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcJwtFlowLimitMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcWhiteListMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcBlackListMiddleware(serviceDetail),
-					grpc_proxy_middleware.GrpcHeaderTransferMiddleware(serviceDetail),
+					grpcmiddleware.GrpcFlowCountMiddleware(serviceDetail),
+					grpcmiddleware.GrpcFlowLimitMiddleware(serviceDetail),
+					grpcmiddleware.GrpcJwtAuthTokenMiddleware(serviceDetail),
+					grpcmiddleware.GrpcJwtFlowCountMiddleware(serviceDetail),
+					grpcmiddleware.GrpcJwtFlowLimitMiddleware(serviceDetail),
+					grpcmiddleware.GrpcWhiteListMiddleware(serviceDetail),
+					grpcmiddleware.GrpcBlackListMiddleware(serviceDetail),
+					grpcmiddleware.GrpcHeaderTransferMiddleware(serviceDetail),
 				),
 				grpc.CustomCodec(proxy.Codec()),
 				grpc.UnknownServiceHandler(grpcHandler))

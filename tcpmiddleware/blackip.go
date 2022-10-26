@@ -13,7 +13,7 @@ func TCPBlackListMiddleware() func(c *TcpSliceRouterContext) {
 		serverInterface := c.Get("service")
 		if serverInterface == nil {
 			c.conn.Write([]byte("get service empty"))
-			c.Abort()
+			c.Abort() //不能在向下传递给其他中间件
 			return
 		}
 		serviceDetail := serverInterface.(*dao.ServiceDetail)
@@ -28,6 +28,7 @@ func TCPBlackListMiddleware() func(c *TcpSliceRouterContext) {
 			blackIpList = strings.Split(serviceDetail.AccessControl.BlackList, ",")
 		}
 
+		//客户端的ip:port
 		splits := strings.Split(c.conn.RemoteAddr().String(), ":")
 		clientIP := ""
 		if len(splits) == 2 {

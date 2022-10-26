@@ -90,6 +90,8 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	if service.HTTPRule.NeedHttps == 1 {
 		schema = "https://"
 	}
+
+	//ip:port
 	if service.ServiceInfo.LoadType == common.LoadTypeTCP || service.ServiceInfo.LoadType == common.LoadTypeGRPC {
 		schema = ""
 	}
@@ -99,14 +101,12 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	for ipIndex, ipItem := range ipList {
 		ipConf[ipItem] = weightList[ipIndex]
 	}
-	//fmt.Println("ipConf", ipConf)
 	mConf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s%s", schema, "%s"), ipConf)
 	if err != nil {
 		return nil, err
 	}
 	lb := load_balance.LoadBanlanceFactorWithConf(load_balance.LbType(service.LoadBalance.RoundType), mConf)
 
-	//save to map and slice
 	lbItem := &LoadBalancerItem{
 		LoadBanlance: lb,
 		ServiceName:  service.ServiceInfo.ServiceName,

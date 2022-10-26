@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/20gu00/gateway/common/lib"
 	"github.com/20gu00/gateway/dao"
-	"github.com/20gu00/gateway/grpc_proxy_router"
+	"github.com/20gu00/gateway/grpcrouter"
 	"github.com/20gu00/gateway/httprouter"
 	"github.com/20gu00/gateway/router"
 	//"github.com/20gu00/gateway/tcp_proxy_router"
@@ -57,7 +57,7 @@ func main() {
 			tcprouter.TcpServerRun() //tcp
 		}()
 		go func() {
-			grpc_proxy_router.GrpcServerRun() //grpc
+			grpcrouter.GrpcServerRun() //grpc
 		}()
 
 		//接收系统信号,优雅关闭
@@ -67,7 +67,7 @@ func main() {
 
 		//关闭可以依次
 		tcprouter.TcpServerStop()
-		grpc_proxy_router.GrpcServerStop()
+		grpcrouter.GrpcServerStop()
 		httprouter.HttpServerStop()
 		httprouter.HttpsServerStop()
 	}

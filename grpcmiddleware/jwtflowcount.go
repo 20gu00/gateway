@@ -1,4 +1,4 @@
-package grpc_proxy_middleware
+package grpcmiddleware
 
 import (
 	"encoding/json"
@@ -8,12 +8,10 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 	"log"
-	"strings"
 )
 
-func GrpcJwtFlowLimitMiddleware(serviceDetail *dao.ServiceDetail) func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func GrpcJwtFlowCountMiddleware(serviceDetail *dao.ServiceDetail) func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		md, ok := metadata.FromIncomingContext(ss.Context())
 		if !ok {
@@ -27,28 +25,18 @@ func GrpcJwtFlowLimitMiddleware(serviceDetail *dao.ServiceDetail) func(srv inter
 			}
 			return nil
 		}
+
 		appInfo := &dao.Tenant{}
 		if err := json.Unmarshal([]byte(appInfos[0]), appInfo); err != nil {
 			return err
 		}
-
-		peerCtx, ok := peer.FromContext(ss.Context())
-		if !ok {
-			return errors.New("peer not found with context")
+		appCounter, err := common.FlowCounterHandler.GetCounter(common.FlowAppPrefix + appInfo.AppID)
+		if err != nil {
+			return err
 		}
-		peerAddr := peerCtx.Addr.String()
-		addrPos := strings.LastIndex(peerAddr, ":")
-		clientIP := peerAddr[0:addrPos]
-		if appInfo.Qps > 0 {
-			clientLimiter, err := common.FlowLimiterHandler.GetLimiter(
-				common.FlowAppPrefix+appInfo.AppID+"_"+clientIP,
-				float64(appInfo.Qps))
-			if err != nil {
-				return err
-			}
-			if !clientLimiter.Allow() {
-				return errors.New(fmt.Sprintf("%v flow limit %v", clientIP, appInfo.Qps))
-			}
+		appCounter.Increase()
+		if appInfo.Qpd > 0 && appCounter.TotalCount > appInfo.Qpd {
+			return errors.New(fmt.Sprintf("租户日请求量限流 limit:%v current:%v", appInfo.Qpd, appCounter.TotalCount))
 		}
 		if err := handler(srv, ss); err != nil {
 			log.Printf("RPC failed with error %v\n", err)

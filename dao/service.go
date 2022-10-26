@@ -50,9 +50,11 @@ func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
 	list := []*ServiceDetail{}
 	for _, serverItem := range s.ServiceSlice {
 		tempItem := serverItem
+		//过滤出tcp的服务写入服务详情列表
 		if tempItem.ServiceInfo.LoadType == common.LoadTypeTCP {
 			list = append(list, tempItem)
 		}
+
 	}
 	return list
 }

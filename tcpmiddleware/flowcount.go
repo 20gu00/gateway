@@ -15,14 +15,14 @@ func TCPFlowCountMiddleware() func(c *TcpSliceRouterContext) {
 		}
 		serviceDetail := serverInterface.(*dao.ServiceDetail)
 
-		//统计项 1 全站 2 服务 3 租户
+		//全站  服务
 		totalCounter, err := common.FlowCounterHandler.GetCounter(common.FlowTotal)
 		if err != nil {
 			c.conn.Write([]byte(err.Error()))
 			c.Abort()
 			return
 		}
-		totalCounter.Increase()
+		totalCounter.Increase() //每次请求进来就加一
 
 		serviceCounter, err := common.FlowCounterHandler.GetCounter(common.FlowServicePrefix + serviceDetail.ServiceInfo.ServiceName)
 		if err != nil {

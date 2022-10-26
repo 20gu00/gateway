@@ -10,7 +10,7 @@ import (
 //初始化中间件
 func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	//router := gin.Default()  会输出内容到终端
-	router := gin.New()
+	router := gin.New() //gin的router
 	router.Use(middlewares...)
 	//router.Handle
 	router.GET("/ping", func(c *gin.Context) { //请求路径 匹配处理逻辑函数
@@ -19,7 +19,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		})
 	})
 
-	//路由组,再注册子路由
+	//创建路由组,再制定这个路由组使用的中间件,注册的子路由也使用这些中间件
 	//先匹配
 	oauth := router.Group("/auth")
 	oauth.Use(middleware.TranslationMiddleware()) //多语言转换中间件

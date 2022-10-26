@@ -1,4 +1,4 @@
-package grpc_proxy_middleware
+package grpcmiddleware
 
 import (
 	"github.com/20gu00/gateway/common"

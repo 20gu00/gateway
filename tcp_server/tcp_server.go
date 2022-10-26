@@ -36,20 +36,21 @@ type TCPHandler interface {
 	ServeTCP(ctx context.Context, conn net.Conn)
 }
 
+//tcp服务器
 type TcpServer struct {
-	Addr    string
-	Handler TCPHandler
-	err     error
-	BaseCtx context.Context
+	Addr    string          //监听的端口
+	Handler TCPHandler      //处理逻辑
+	err     error           //错误
+	BaseCtx context.Context //上下文
 
 	WriteTimeout     time.Duration //写buf数据的超时时间
 	ReadTimeout      time.Duration //读取buf数据的超时时间
 	KeepAliveTimeout time.Duration //长连接超时时间
 
 	mu         sync.Mutex
-	inShutdown int32
-	doneChan   chan struct{}
-	l          *onceCloseListener
+	inShutdown int32              //是否关闭
+	doneChan   chan struct{}      //是否停止的channel
+	l          *onceCloseListener //一次性的连接,启动时需要
 }
 
 func (s *TcpServer) shuttingDown() bool {

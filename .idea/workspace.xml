@@ -6,23 +6,26 @@
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/docs.go" beforeDir="false" afterPath="$PROJECT_DIR$/docs/docs.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/swagger.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dto/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/dto/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service_lb.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service_lb.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_black_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/blackip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/flowcount.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/flowlimit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_header_transfer.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/metadatatransfer.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_auth_token.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/jwtauth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/jwtflowcount.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_jwt_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/jwtflowlimit.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/grpc_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_middleware/grpc_white_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcmiddleware/whiteip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc_proxy_router/grpcserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcrouter/grpcserver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/httprouter/route.go" beforeDir="false" afterPath="$PROJECT_DIR$/httprouter/route.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reverse_proxy/tcp_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/reverse_proxy/tcp_reverse_proxy.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_black_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/blackip.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_flow_count.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/flowcount.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_flow_limit.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/flowlimit.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_slice_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/slicerouter.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_middleware/tcp_white_list.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/whiteip.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_proxy_router/tcpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcprouter/tcpserver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp_server/tcp_conn.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp_server/tcp_conn.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tcp_server/tcp_server.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp_server/tcp_server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcpmiddleware/blackip.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/blackip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcpmiddleware/flowcount.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/flowcount.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcpmiddleware/slicerouter.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcpmiddleware/slicerouter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcprouter/tcpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcprouter/tcpserver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/file" beforeDir="false" afterPath="$PROJECT_DIR$/tools/file" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

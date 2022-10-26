@@ -37,7 +37,7 @@ tcp代理 四层
 tcp服务器 代理 -> 负载均衡
 流量统计器限流器(流量限速)负载均衡器都是单例方式,一个服务一个,负载均衡包括检测服务是否就绪
 http代理基于原生的http服务实现
-
+tcp的权限认证和租户统计
 测试/auth/token:
     postman: auth->base auth->username,passwd
              body->x-www-form-urlencoded->grant_type client_credentials和scope read_write
@@ -56,3 +56,6 @@ curl --location --request POST 'http://127.0.0.1:8080/auth/token' \
 
 nginx的upstream
 数据源->源头->上游->下游->用户
+
+tcp代理测试:
+    telnet 127.0.0.1 8021

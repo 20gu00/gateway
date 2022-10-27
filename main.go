@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	endpoint = flag.String("endpoint", "", "input endpoint dashboard or server")
-	config   = flag.String("config", "", "input config file like ./conf/dev/")
+	kind   = flag.String("kind", "", "输入服务类型 proxy or market")
+	config = flag.String("config", "", "输入配置文件路径 ./conf/dev/")
 )
 
 func main() {
 	flag.Parse()
-	if *endpoint == "" {
+	if *kind == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *endpoint == "dashboard" {
+	if *kind == "dashboard" {
 		lib.InitModule(*config)
 		defer lib.Destroy()
 		router.HttpServerRun()

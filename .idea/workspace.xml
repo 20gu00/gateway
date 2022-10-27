@@ -5,17 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/README.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/grpcrouter/grpcserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcrouter/grpcserver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reverse_proxy/grcp_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/reverse_proxy/grcp_reverse_proxy.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/file" beforeDir="false" afterPath="$PROJECT_DIR$/tools/file" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/tcptestserver/tcptestserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/tools/tcptestserver/tcptestserver.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

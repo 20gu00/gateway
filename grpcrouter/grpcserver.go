@@ -18,17 +18,20 @@ type warpGrpcServer struct {
 	*grpc.Server
 }
 
+//port方式接入 客户端主动探测的服务发现
 func GrpcServerRun() {
 	serviceList := dao.ServiceManagerHandler.GetGrpcServiceList()
 	for _, serviceItem := range serviceList {
 		tempItem := serviceItem
 		go func(serviceDetail *dao.ServiceDetail) {
 			addr := fmt.Sprintf(":%d", serviceDetail.GRPCRule.Port)
+			//负载均衡器
 			rb, err := dao.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
 			if err != nil {
 				log.Fatalf(" [INFO] GetTcpLoadBalancer %v err:%v\n", addr, err)
 				return
 			}
+			//连接监听器
 			lis, err := net.Listen("tcp", addr)
 			if err != nil {
 				log.Fatalf(" [INFO] GrpcListen %v err:%v\n", addr, err)
@@ -46,7 +49,7 @@ func GrpcServerRun() {
 					grpcmiddleware.GrpcHeaderTransferMiddleware(serviceDetail),
 				),
 				grpc.CustomCodec(proxy.Codec()),
-				grpc.UnknownServiceHandler(grpcHandler))
+				grpc.UnknownServiceHandler(grpcHandler)) //grpc没有设置任何回调,直接回调这个handler
 
 			grpcServerList = append(grpcServerList, &warpGrpcServer{
 				Addr:   addr,

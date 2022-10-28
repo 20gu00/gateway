@@ -29,7 +29,7 @@ spec:
       name: "gateway-market"
       targetPort: 8880
       protocol: TCP
-      #nodePort: 30088
+      nodePort: 30088
   type: NodePort
   selector:
     name: gateway-market

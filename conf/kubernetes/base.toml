@@ -15,7 +15,7 @@
     ]
 
 [session]
-    redis_server = "192.168.23.232:6379"   #redis session server  直接使用本地的redis
+    redis_server = "redis:6379"   #redis session server  直接使用本地的redis
     redis_password = ""
 
 [log]
@@ -38,5 +38,5 @@
 [swagger]
     title="gateway swagger API"
     desc="后台管理功能的swagger文档"
-    host="127.0.0.1:8880"
+    host="192.168.23.232:30088"  #k8s的market的svc
     base_path=""

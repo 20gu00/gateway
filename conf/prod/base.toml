@@ -15,11 +15,11 @@
     ]
 
 [session]
-    redis_server = "192.168.2.232:6379"   #redis session server
+    redis_server = "127.0.0.1:6379"   #redis session server
     redis_password = ""
 
 [log]
-    log_level = "trace"         #日志打印最低级别
+    log_level = "trace"         #日志打印最低级别,追踪
     [log.file_writer]           #文件写入配置
         on = true
         log_path = "./logs/go_gateway.inf.log"
@@ -37,7 +37,7 @@
     cluster_ssl_port="30443"  #nodeport
 
 [swagger]
-    title="go_gateway swagger API"
+    title="gateway swagger API"
     desc="This is a sample server celler server."
     host="127.0.0.1:8880"
     base_path=""

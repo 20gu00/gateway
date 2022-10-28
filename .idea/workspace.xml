@@ -6,13 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile-market" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile-market" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile-proxy" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile-proxy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/gateway" beforeDir="false" afterPath="$PROJECT_DIR$/bin/gateway" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/dev/base.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dev/base.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/dev/redis_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dev/redis_map.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conf/prod/base.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/base.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conf/prod/mysql_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/mysql_map.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conf/prod/redis_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/redis_map.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/gateway.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tools/oldsql/gateway.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/one.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tools/oldsql/one.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,10 +70,13 @@
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/conf/kubernetes" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/conf/kubernetes" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/tools/oldsql" />

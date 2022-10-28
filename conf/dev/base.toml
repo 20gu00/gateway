@@ -31,12 +31,12 @@
         color = false
 
 [cluster]
-    cluster_ip="127.0.0.1"
+    cluster_ip="192.168.23.232"
     cluster_port="8080"
     cluster_ssl_port="4433"
 
 [swagger]
     title="ggateway swagger API"
     desc="后台管理功能的swagger文档"
-    host="127.0.0.1:8880"
+    host="192.168.23.232:8880"
     base_path=""

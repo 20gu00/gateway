@@ -12,7 +12,7 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-COPY conf/prod  /app/etc/
+COPY conf/kubernetes  /app/etc/
 COPY cert /app/cert
 
 RUN go build -ldflags="-s -w" -o /app/gateway-market main.go

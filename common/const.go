@@ -4,7 +4,6 @@ package common
 const (
 	LoadTypeHTTP = iota
 	LoadTypeTCP
-	LoadTypeGRPC
 )
 
 //接入方式
@@ -32,6 +31,5 @@ var (
 	LoadTypeMap = map[int]string{
 		LoadTypeHTTP: "HTTP",
 		LoadTypeTCP:  "TCP",
-		LoadTypeGRPC: "GRPC",
 	}
 )

@@ -6,14 +6,48 @@
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile-market" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile-market" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile-proxy" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile-proxy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/gateway" beforeDir="false" afterPath="$PROJECT_DIR$/bin/gateway" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/dev/base.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dev/base.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/dev/redis_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dev/redis_map.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/prod/base.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/base.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/prod/mysql_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/mysql_map.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/prod/redis_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/redis_map.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/const.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/const.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/.travis.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/checkup.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/fixup.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/proxy/codec.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/proxy/director.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/proxy/doc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/proxy/handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/testservice/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/testservice/test.pb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/grpc-proxy/testservice/test.proto" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/service_add_update_grpc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/service_add_update_tcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/service_add_update_tcp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/servicelist.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/servicelist.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service_grpc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service_info.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service_info.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dao/service_lb.go" beforeDir="false" afterPath="$PROJECT_DIR$/dao/service_lb.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/docs.go" beforeDir="false" afterPath="$PROJECT_DIR$/docs/docs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/swagger.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docs/swagger.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/blackip.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/flowcount.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/flowlimit.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/grpc_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/jwtauth.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/jwtflowcount.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/jwtflowlimit.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/metadatatransfer.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcmiddleware/whiteip.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpcrouter/grpcserver.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reverse_proxy/grcp_reverse_proxy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/route.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/route.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/grcp-sc/client/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/grcp-sc/pb/test.pb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/grcp-sc/pb/test_grpc.pb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/grcp-sc/proto/test.proto" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/grcp-sc/server/main.go" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +72,6 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/tools/tcptestserver/tcptestserver.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/dao/service_lb.go" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/grpcrouter/grpcserver.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/tcprouter/tcpserver.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/reverse_proxy/tcp_reverse_proxy.go" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/tools/file" root0="FORCE_HIGHLIGHTING" />

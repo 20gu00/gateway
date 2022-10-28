@@ -71,13 +71,8 @@ func (s *ServiceController) ServiceList(ctx *gin.Context) {
 			serviceAddr = serviceDetail.HTTPRule.Rule
 		}
 
-		//
 		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeTCP {
 			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.TCPRule.Port)
-		}
-
-		if serviceDetail.ServiceInfo.LoadType == common.LoadTypeGRPC {
-			serviceAddr = fmt.Sprintf("%s:%d", clusterIP, serviceDetail.GRPCRule.Port)
 		}
 
 		//实际的工作负载

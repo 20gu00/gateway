@@ -46,13 +46,6 @@ func (admin *ServiceController) ServiceAddTcp(ctx *gin.Context) {
 		middleware.ResponseError(ctx, 2003, errors.New("服务端口被占用，请重新输入"))
 		return
 	}
-	grpcRuleSearch := &dao.GrpcRule{
-		Port: in.Port,
-	}
-	if _, err := grpcRuleSearch.Find(ctx, lib.GORMDefaultPool, grpcRuleSearch); err == nil {
-		middleware.ResponseError(ctx, 2004, errors.New("服务端口被占用，请重新输入"))
-		return
-	}
 
 	if len(strings.Split(in.IpList, ",")) != len(strings.Split(in.WeightList, ",")) {
 		middleware.ResponseError(ctx, 2005, errors.New("ip列表与权重设置不匹配"))

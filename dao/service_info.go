@@ -57,13 +57,6 @@ func (s *ServiceInfo) ServiceDetail(ctx *gin.Context, tx *gorm.DB, search *Servi
 		return nil, err
 	}
 
-	//service_grpc_rule
-	grpcSearch := &GrpcRule{ServiceID: search.ID}
-	grpcResult, err := grpcSearch.Find(ctx, tx, grpcSearch)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-
 	loadBalanceSearch := &LoadBalance{ServiceID: search.ID}
 	loadBalanceResult, err := loadBalanceSearch.Find(ctx, tx, loadBalanceSearch)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -75,7 +68,6 @@ func (s *ServiceInfo) ServiceDetail(ctx *gin.Context, tx *gorm.DB, search *Servi
 		ServiceInfo:   search,
 		HTTPRule:      httpResult,
 		TCPRule:       tcpresult,
-		GRPCRule:      grpcResult,
 		LoadBalance:   loadBalanceResult,
 		AccessControl: accessControlResult,
 	}

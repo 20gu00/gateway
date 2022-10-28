@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/20gu00/gateway/common/lib"
 	"github.com/20gu00/gateway/dao"
-	"github.com/20gu00/gateway/grpcrouter"
 	"github.com/20gu00/gateway/httprouter"
 	"github.com/20gu00/gateway/router"
 	//"github.com/20gu00/gateway/tcp_proxy_router"
@@ -56,9 +55,6 @@ func main() {
 		go func() {
 			tcprouter.TcpServerRun() //tcp
 		}()
-		go func() {
-			grpcrouter.GrpcServerRun() //grpc
-		}()
 
 		//接收系统信号,优雅关闭
 		quit := make(chan os.Signal)
@@ -67,7 +63,6 @@ func main() {
 
 		//关闭可以依次
 		tcprouter.TcpServerStop()
-		grpcrouter.GrpcServerStop()
 		httprouter.HttpServerStop()
 		httprouter.HttpsServerStop()
 	}

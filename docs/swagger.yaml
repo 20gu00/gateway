@@ -22,43 +22,6 @@ definitions:
     required:
     - password
     type: object
-  dto.ServiceAddGrpcInput:
-    properties:
-      black_list:
-        type: string
-      clientip_flow_limit:
-        type: integer
-      forbid_list:
-        type: string
-      header_transfor:
-        type: string
-      ip_list:
-        type: string
-      open_auth:
-        type: integer
-      port:
-        type: integer
-      round_type:
-        type: integer
-      service_desc:
-        type: string
-      service_flow_limit:
-        type: integer
-      service_name:
-        type: string
-      weight_list:
-        type: string
-      white_host_name:
-        type: string
-      white_list:
-        type: string
-    required:
-    - ip_list
-    - port
-    - service_desc
-    - service_name
-    - weight_list
-    type: object
   dto.ServiceAddHttpInput:
     properties:
       black_list:
@@ -162,46 +125,6 @@ definitions:
       white_list:
         type: string
     required:
-    - ip_list
-    - port
-    - service_desc
-    - service_name
-    - weight_list
-    type: object
-  dto.ServiceUpdateGrpcInput:
-    properties:
-      black_list:
-        type: string
-      clientip_flow_limit:
-        type: integer
-      forbid_list:
-        type: string
-      header_transfor:
-        type: string
-      id:
-        type: integer
-      ip_list:
-        type: string
-      open_auth:
-        type: integer
-      port:
-        type: integer
-      round_type:
-        type: integer
-      service_desc:
-        type: string
-      service_flow_limit:
-        type: integer
-      service_name:
-        type: string
-      weight_list:
-        type: string
-      white_host_name:
-        type: string
-      white_list:
-        type: string
-    required:
-    - id
     - ip_list
     - port
     - service_desc
@@ -514,29 +437,6 @@ paths:
       summary: service按类型统计
       tags:
       - market
-  /service/add_grpc:
-    post:
-      consumes:
-      - application/json
-      description: 添加grpc服务
-      operationId: /service/add_grpc
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ServiceAddGrpcInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: 添加grpc服务
-      tags:
-      - service管理
   /service/add_http:
     post:
       consumes:
@@ -678,29 +578,6 @@ paths:
           schema:
             $ref: '#/definitions/middleware.Response'
       summary: service统计(流量)
-      tags:
-      - service管理
-  /service/update_grpc:
-    post:
-      consumes:
-      - application/json
-      description: 更新grpc服务
-      operationId: /service/update_grpc
-      parameters:
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ServiceUpdateGrpcInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: 更新grpc服务
       tags:
       - service管理
   /service/update_http:

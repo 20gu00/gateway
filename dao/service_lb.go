@@ -92,7 +92,7 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	}
 
 	//ip:port
-	if service.ServiceInfo.LoadType == common.LoadTypeTCP || service.ServiceInfo.LoadType == common.LoadTypeGRPC {
+	if service.ServiceInfo.LoadType == common.LoadTypeTCP {
 		schema = ""
 	}
 	ipList := service.LoadBalance.GetIPListByModel()

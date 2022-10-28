@@ -23,7 +23,6 @@ type ServiceDetail struct {
 	ServiceInfo   *ServiceInfo   `json:"serviceInfo" description:"service的基本信息"`
 	HTTPRule      *HttpRule      `json:"http_rule" description:"http_rule表"`
 	TCPRule       *TcpRule       `json:"tcp_rule" description:"tcp_rule表"`
-	GRPCRule      *GrpcRule      `json:"grpc_rule" description:"grpc_rule表"`
 	LoadBalance   *LoadBalance   `json:"load_balance" description:"load_balance表"`
 	AccessControl *AccessControl `json:"access_control" description:"access_control表"`
 }
@@ -55,18 +54,6 @@ func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
 			list = append(list, tempItem)
 		}
 
-	}
-	return list
-}
-
-//获取grpcservice
-func (s *ServiceManager) GetGrpcServiceList() []*ServiceDetail {
-	list := []*ServiceDetail{}
-	for _, serverItem := range s.ServiceSlice {
-		tempItem := serverItem
-		if tempItem.ServiceInfo.LoadType == common.LoadTypeGRPC {
-			list = append(list, tempItem)
-		}
 	}
 	return list
 }

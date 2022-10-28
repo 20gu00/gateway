@@ -16,6 +16,4 @@ func ServiceRegister(group *gin.RouterGroup) {
 	group.POST("/update_http", service.ServiceUpdateHttp)
 	group.POST("/add_tcp", service.ServiceAddTcp)
 	group.POST("/update_tcp", service.ServiceUpdateTcp)
-	group.POST("/add_grpc", service.ServiceAddGrpc)
-	group.POST("/update_grpc", service.ServiceUpdateGrpc)
 }

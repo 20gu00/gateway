@@ -35,7 +35,7 @@ kubectl apply -f gateway.yaml
 ## 本地运行  
 go run main.go --config ./conf/dev/ --kind market  
 go run main.go --config ./conf/dev/ --kind proxy  
-或者
+或者  
 ./bin/gateway --config ./conf/dev --kind market  
 ./bin/gateway --config ./conf/dev --kind proxy  
 

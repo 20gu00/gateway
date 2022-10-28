@@ -25,7 +25,27 @@ go实现的网关项目，分网关和后台管理两大部分，后端项目
 4.网关的租户的增删改查和租户的流量统计及其近两日的流量对比  
 5.主页的服务和租户的流量统计  
           
-          
+## k8s运行
+我提供了脚本，运行生成镜像：  
+./build-image.sh  
+
+部署到k8s中:  
+kubectl apply -f gateway.yaml  
+
+## 本地运行  
+go run main.go --config ./conf/dev/ --kind market  
+go run main.go --config ./conf/dev/ --kind proxy  
+或者
+./bin/gateway --config ./conf/dev --kind market  
+./bin/gateway --config ./conf/dev --kind proxy  
+
+## 数据库准备
+开发测试环境建议直接本地部署mysql和redis即可，mysql创建**gaterway**数据库，导入数据库文件./tools/new.sql  
+如果项目是跑在k8s上，mysql和redis照样可以使用本地环境的，配置好通信即可  
+
+提供了k8s部署mysql和redis和数据持久化的方案：  
+yaml文件在./tools/databases下，直接apply部署即可  
+
 ## 个人预计近期优化
 1.结合k8s，采用operator模式，实现真正的云原生  
 2.使用grpc拆分成微服务架构  

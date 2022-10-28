@@ -32,3 +32,8 @@ go实现的网关项目，分网关和后台管理两大部分，后端项目
 
 ## 数据库和工具
 mysql redis swagger  
+
+## 简单使用介绍  
+本地环境：  
+         后台管理服务: go run main.go --config ./conf/dev --kind market  
+         网关服务: go run main.go --config ./conf/dev/ --kind proxy  

@@ -6,12 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="582fe7fa-23bd-4d6d-8f1f-089e6b80602c" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpcrouter/grpcserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpcrouter/grpcserver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/prod/base.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/base.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/prod/mysql_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/mysql_map.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conf/prod/redis_map.toml" beforeDir="false" afterPath="$PROJECT_DIR$/conf/prod/redis_map.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/go_gateway.inf.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/go_gateway.inf.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reverse_proxy/grcp_reverse_proxy.go" beforeDir="false" afterPath="$PROJECT_DIR$/reverse_proxy/grcp_reverse_proxy.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/gateway.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tools/oldsql/gateway.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/one.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tools/oldsql/one.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,9 +74,10 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/tools/oldsql" />
       <recent name="$PROJECT_DIR$/tools/grcp-sc/proto" />
       <recent name="$PROJECT_DIR$/tools/grcp-sc" />
-      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/tools" />
     </key>
   </component>

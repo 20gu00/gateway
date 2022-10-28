@@ -1,0 +1,30 @@
+FROM golang:alpine AS builder
+
+LABEL stage=gobuidler
+
+ENV GOPROXY https://goproxy.cn,direct
+ENV GOOS linux
+ENV GO111MODULE auto
+
+WORKDIR /go/src/app
+
+ADD go.mod .
+ADD go.sum .
+RUN go mod download
+COPY . .
+COPY conf/prod  /app/etc/
+COPY cert /app/cert
+
+RUN go build -ldflags="-s -w" -o /app/gateway-market main.go
+
+FROM alpine
+
+ENV TZ Asia/Chongqing
+
+WORKDIR /app
+
+COPY --from=builder /app/gateway-market /app/gateway-market
+COPY --from=builder /app/etc /app/etc
+COPY --from=builder /app/cert /app/cert
+
+CMD ["./gateway-market", "--config", "etc/","--kind","market"]

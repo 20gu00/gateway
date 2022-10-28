@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *kind == "dashboard" {
+	if *kind == "market" {
 		lib.InitModule(*config)
 		defer lib.Destroy()
 		router.HttpServerRun()

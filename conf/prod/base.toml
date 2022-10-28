@@ -1,7 +1,7 @@
 # This is base config
 
 [base]
-    debug_mode="debug"
+    debug_mode="release"
     time_location="Asia/Chongqing"
 
 [http]
@@ -15,7 +15,7 @@
     ]
 
 [session]
-    redis_server = "192.168.3.4:6379"   #redis session server
+    redis_server = "192.168.2.232:6379"   #redis session server
     redis_password = ""
 
 [log]
@@ -30,10 +30,11 @@
         on = false
         color = false
 
+#网关的地址,ip:port
 [cluster]
-    cluster_ip="192.168.3.4"
-    cluster_port="30080"
-    cluster_ssl_port="30443"
+    cluster_ip="192.168.23.232"  #nodeport方式,任何一台主机的ip
+    cluster_port="30080"  #nodeport
+    cluster_ssl_port="30443"  #nodeport
 
 [swagger]
     title="go_gateway swagger API"

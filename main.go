@@ -2,68 +2,94 @@ package main
 
 import (
 	"flag"
-	"github.com/20gu00/gateway/common/lib"
-	"github.com/20gu00/gateway/dao"
-	"github.com/20gu00/gateway/httprouter"
+	"fmt"
+	"github.com/20gu00/gateway/common"
+	"github.com/20gu00/gateway/initdo"
 	"github.com/20gu00/gateway/router"
-	//"github.com/20gu00/gateway/tcp_proxy_router"
-	"github.com/20gu00/gateway/tcprouter"
+	"github.com/20gu00/gateway/router/httpProxyServer"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 var (
-	kind   = flag.String("kind", "", "输入服务类型 proxy or market")
-	config = flag.String("config", "", "输入配置文件路径 ./conf/dev/")
+	kind = flag.String("kind", "admin", "输入要开启的服务器类型 proxy or admin or all")
+	c    = 1
 )
 
 func main() {
 	flag.Parse()
+	initdo.InitDo()
 	if *kind == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if *config == "" {
-		flag.Usage()
+
+	if *kind == "admin" {
+		initdo.Admin <- c
+	} else if *kind == "proxy" {
+		initdo.Proxy <- c
+	} else if *kind == "all" {
+		initdo.All <- c
+	} else {
+		fmt.Printf("输入参数不正确 proxy or admin or all")
 		os.Exit(1)
 	}
 
-	if *kind == "market" {
-		lib.InitModule(*config)
-		defer lib.Destroy()
-		router.HttpServerRun()
+	go func() {
+		<-common.QuitSignal()
+		if *kind == "admin" {
+			router.HttpServerStop()
+			os.Exit(0)
+		} else if *kind == "proxy" {
+			httpProxyServer.HttpProxyServerStop()
+			httpProxyServer.HttpsProxyServerStop()
+			os.Exit(0)
+		} else {
+			router.HttpServerStop()
+			httpProxyServer.HttpProxyServerStop()
+			httpProxyServer.HttpsProxyServerStop()
+			os.Exit(0)
+		}
+	}()
 
-		quit := make(chan os.Signal)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		<-quit
-
-		router.HttpServerStop()
-	} else {
-		lib.InitModule(*config)
-		defer lib.Destroy()
-		dao.ServiceManagerHandler.LoadOnce()
-		dao.AppManagerHandler.LoadOnce()
-
-		//多个代理服务器
-		go func() {
-			httprouter.HttpServerRun() //http
-		}()
-		go func() {
-			httprouter.HttpsServerRun() //https
-		}()
-		go func() {
-			tcprouter.TcpServerRun() //tcp
-		}()
-
-		//接收系统信号,优雅关闭
-		quit := make(chan os.Signal)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) //中止,强制终止
-		<-quit
-
-		//关闭可以依次
-		tcprouter.TcpServerStop()
-		httprouter.HttpServerStop()
-		httprouter.HttpsServerStop()
+	for {
+		select {
+		case <-initdo.Admin:
+			go func() {
+				router.HttpServerRun()
+			}()
+		case <-initdo.Proxy:
+			go func() {
+				httpProxyServer.HttpProxyServerRun()
+			}()
+			go func() {
+				httpProxyServer.HttpsProxyServerRun()
+			}()
+		case <-initdo.All:
+			go func() {
+				router.HttpServerRun()
+			}()
+			go func() {
+				httpProxyServer.HttpProxyServerRun()
+			}()
+			go func() {
+				httpProxyServer.HttpsProxyServerRun()
+			}()
+		}
 	}
+
+	//监听退出信号,模拟优雅关闭(关闭handler 数据库连接等)
+	//quit := make(chan os.Signal)
+	//signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT) //监听退出信号(sigint类比ctrl-c,sigterm正常退出
+	//<-quit                                               //阻塞
+	//如果某个服务未开启,这里使用关闭,业务虽然不影响,但是逻辑不好
+	//router.HttpServerStop()
+	//httpProxyServer.HttpProxyServerStop()
+	//httpProxyServer.HttpsProxyServerStop()
+	//tcpProxyServer.TcpProxyServerStop()
 }
+
+//func main() {
+//	initdo.InitDo()
+//	r := router.InitRouter()
+//	r.Run(":8000")
+//}

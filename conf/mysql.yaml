@@ -1,0 +1,8 @@
+mysql:
+  driverName: "mysql"
+  #parseTime:time.Time<->datetime gorm自动做转换 loc=Local mysql时区设置
+  #可以每个每个单独定义,我这里一块定义了
+  sourceName: root:100.Acjq@tcp(127.0.0.1:3306)/gateway?charset=utf8&parseTime=true&loc=Local
+  max_open_conn: 20
+  max_idle_conn: 10
+  max_conn_life_time: 100

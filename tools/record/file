@@ -1,0 +1,352 @@
+create database gateway charset=utf8
+
+
+-----------log
+集成logrus
+log只提供了三个简单的接口，对于某些大型项目来说有点太鸡肋。
+logrus是一个完全兼容log的标准库,支持两种日志输出格式：文本 And JSON
+
+
+
+1	logrus.TraceLevel(trace)	非常小粒度的信息
+2	logrus.DebusLevel(debug)	一般程序中输出的调试信息
+3	logrus.InfoLevel(info)	    关键操作（核心流程日志）
+4	logrus.WarnLevel(warn)	    警告信息
+5	logrus.ErrorLevel(error)	错误信息
+6	logrus.FatalLevel(fatal)	致命错误，出现后程序无法运行，输出日之后程序停止运行
+7	logrus.PanicLevel(panic)	记录日志，然后panic
+
+在logrus中，高于设置级别的日志是不会输出的，默认设置级别是InfoLevel(klog也是)
+
+
+****************************************
+logrus.SetLevel(logrus.TraceLevel)
+logrus.Trace("1---trace---msg")
+logrus.Debug("2---debug---msg")
+logrus.Info("3---info---msg")
+logrus.Warn("4---warn---msg")
+logrus.Error("5---error---msg")
+logrus.Fatal("6---fatal---msg")
+logrus.Panic("7---panic---msg")
+
+运行之后我们看下日志输出情况：(trace级别)
+
+TRAC[0000] 1---trace---msg
+DEBU[0000] 2---debug---msg
+INFO[0000] 3---info---msg
+WARN[0000] 4---warn---msg
+ERRO[0000] 5---error---msg
+FATA[0000] 6---fatal---msg
+************************************
+
+
+**********************************
+直接定位到哪个函数的日志输出
+logrus提供了专门的配置，只需要在初始化logrus的时候调用SetReportCaller()函数并设置为true即可。
+
+示例：
+logrus.SetReportCaller(true)
+logrus.Info("3---info---msg")
+
+直接运行看效果：
+INFO[0000]/Users/fu/GolandProjects/logrusDemo/main.go:29 main.main() 3---info---msg
+************************************
+
+
+******************
+添加附属信息
+ logrus提供了解决方案，就是WithField和WithFields ,允许在输出中添加一些字段，比如：
+
+logrus.WithFields(logrus.Fields{
+		"UUID": "12345678",
+	}).Info("info msg")
+
+日志输出：
+INFO[0000] 3---info---msg                                UUID=12345678
+
+这是针对单个的使用方式，如果想批量使用更好办：
+requestLogger := logrus.WithFields(logrus.Fields{
+		"UUID": "12345678",
+	})
+requestLogger.Info("3---info---msg")
+requestLogger.Error("5---error---msg")
+
+日志输出：
+INFO[0000] 3---info---msg                                UUID=12345678
+ERRO[0000] 5---error---msg                               UUID=12345678
+************************************
+
+
+***********************
+json格式
+默认输出格式文本
+
+logrus不同于log的最大之处就是提供了json格式的输出，只需要在初始化的时候设置SetFormatter即可。
+
+	logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.Trace("1---trace---msg")
+	logrus.Debug("2---debug---msg")
+	logrus.Info("3---info---msg")
+	logrus.Warn("4---warn---msg")
+	logrus.Error("5---error---msg")
+	logrus.Fatal("6---fatal---msg")
+	logrus.Panic("7---panic---msg")
+
+输出的格式：
+{"level":"trace","msg":"1---trace---msg","time":"2022-05-14T11:37:56+08:00"}
+{"level":"debug","msg":"2---debug---msg","time":"2022-05-14T11:37:56+08:00"}
+{"level":"info","msg":"3---info---msg","time":"2022-05-14T11:37:56+08:00"}
+{"level":"warning","msg":"4---warn---msg","time":"2022-05-14T11:37:56+08:00"}
+{"level":"error","msg":"5---error---msg","time":"2022-05-14T11:37:56+08:00"}
+{"level":"fatal","msg":"6---fatal---msg","time":"2022-05-14T11:37:56+08:00"}
+*********************************
+
+lumberjack切分日志文件
+gin框架自带日志记录功能,通过fmt.Fprint和fmt.Fprintf来记录日志信息，默认是将日志写到终端,可以通过gin.DefaultWriter来设置写入文件。
+
+终端禁用颜色:
+gin.DisableConsoleColor()
+
+只写入文件:
+********************************************
+// 日志记录使用
+func main()  {
+  // 禁用控制台颜色，将日志写入文件时不需要控制台颜色
+ gin.DisableConsoleColor()
+ // 记录到指定文件
+ f, _ := os.Create("gin.log")
+ gin.DefaultWriter = io.MultiWriter(f)
+ // 创建容器
+ engine := gin.Default()
+ engine.GET("/log", func(context *gin.Context) {
+  // 记录日志
+  fmt.Fprint(gin.DefaultWriter,"[gin-log] 日志测试使用 \n")
+  fmt.Fprintf(gin.DefaultWriter, "[gin-log] Method: %v \n", context.Request.Method)
+  fmt.Fprintf(gin.DefaultWriter, "[gin-log] Url: %v \n", context.Request.URL)
+  fmt.Fprintf(gin.DefaultWriter, "[gin-log] Header: %v \n", context.Request.Header)
+  context.JSON(200,gin.H{"msg":"success"})
+ })
+ // 启动服务
+ _ = engine.Run()
+}
+************************************************
+
+
+同时写入文件和终端:
+gin.DefaultWriter = io.MultiWriter(f,os.Stdout)
+
+
+集成logrus的案例:
+*********************************************
+package main
+import (
+ "github.com/sirupsen/logrus"
+ "os"
+ "path"
+)
+var (
+ logPath = "./log"
+ logFile = "gin.log"
+)
+var LogInstance = logrus.New()
+func init()  {
+ // 打开文件
+ logFileName := path.Join(logPath, logFile)
+ fileWriter, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+ if err != nil {
+  panic(err)
+ }
+ // 设置日志输出到文件
+ LogInstance.SetOutput(fileWriter)
+ // 设置日志输出格式
+ LogInstance.SetFormatter(&logrus.JSONFormatter{})
+ // 设置日志记录级别
+ LogInstance.SetLevel(logrus.DebugLevel)
+}
+************************************
+
+********************************************
+package main
+import (
+ "github.com/gin-gonic/gin"
+ "github.com/sirupsen/logrus"
+)
+func main() {
+ engine := gin.Default()
+ engine.GET("/log", func(context *gin.Context) {
+  // Warning级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "Method": context.Request.Method,
+  }).Warning("Warning级别日志")
+
+  // Error级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "param-name": context.DefaultQuery("name",""),
+  }).Error("Error级别日志")
+
+  if context.DefaultQuery("key","") == "1" {
+   // Fatal级别日志(此类日志会让服务结束)
+   LogInstance.WithFields(logrus.Fields{
+    "Host": context.Request.Host,
+   }).Fatal("Fatal级别日志")
+  }
+
+  // info级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "code": context.Writer.Status(),
+   "url" : context.Request.URL.Path,
+   "method" : context.Request.Method,
+  }).Info("info级别日志")
+  context.JSON(200,gin.H{"msg":"success"})
+ })
+ _ = engine.Run()
+}
+********************************************
+
+
+Lumberjack:https://github.com/natefinch/lumberjack是一个Go包，用于将日志写入滚动文件。
+***********************
+package main
+import (
+ "github.com/natefinch/lumberjack"
+ "github.com/sirupsen/logrus"
+ "path"
+)
+var (
+ logPath = "./log"
+ logFile = "gin.log"
+)
+var LogInstance = logrus.New()
+// 日志初始化
+func init()  {
+ // 打开文件
+ logFileName := path.Join(logPath, logFile)
+ // 使用滚动压缩方式记录日志
+ rolling(logFileName)
+ // 设置日志输出JSON格式
+ //LogInstance.SetFormatter(&logrus.JSONFormatter{})
+ LogInstance.SetFormatter(&logrus.TextFormatter{})
+ // 设置日志记录级别
+ LogInstance.SetLevel(logrus.DebugLevel)
+}
+// 日志滚动设置
+func rolling(logFile string)  {
+ // 设置输出
+ LogInstance.SetOutput(&lumberjack.Logger{
+  Filename:logFile, //日志文件位置
+  MaxSize: 1,// 单文件最大容量,单位是MB
+  MaxBackups: 3,// 最大保留过期文件个数
+  MaxAge: 1 ,// 保留过期文件的最大时间间隔,单位是天
+  Compress: true,// 是否需要压缩滚动日志, 使用的 gzip 压缩
+ })
+}
+***********************
+package main
+import (
+ "github.com/gin-gonic/gin"
+ "github.com/sirupsen/logrus"
+ "strings"
+)
+func main() {
+ engine := gin.Default()
+ engine.GET("/log", func(context *gin.Context) {
+  // Warning级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "Method": context.Request.Method,
+  }).Warning("Warning级别日志")
+
+  // Error级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "param-name": context.DefaultQuery("name",""),
+  }).Error("Error级别日志")
+
+  if context.DefaultQuery("key","") == "1" {
+   // Fatal级别日志(此类日志会让服务结束)
+   LogInstance.WithFields(logrus.Fields{
+    "Host": context.Request.Host,
+   }).Fatal("Fatal级别日志")
+  }
+
+  // info级别日志
+  LogInstance.WithFields(logrus.Fields{
+   "code": context.Writer.Status(),
+   "url" : context.Request.URL.Path,
+   "context" : strings.Repeat("测试",50000),// 重复
+  }).Info("info级别日志")
+  context.JSON(200,gin.H{"msg":"success"})
+ })
+ _ = engine.Run()
+}
+
+*******************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*******************************
+------------metrics----------------------------
+使用 Golang 下的 expvar 和 expvarmon 来洞察程序指标
+Go 语言内置 expvar，基于 expvar 提供的对基础度量的支持能力，我们可以自定义各种度量（metrics）。
+该包提供了一种标准化接口用于公共变量，例如针对 server 中的操作计数器。
+expvar 以 JSON 格式通过 HTTP 的 /debug/vars 来暴露这些变量。
+
+************************************
+import (
+ _ "expvar"
+ "net/http"
+)
+
+func main() {
+ http.ListenAndServe(":8080", nil)
+}
+************************************
+
+直接对外暴露了一个 /debug/vars 的 HTTP EndPoint
+curl 127.0.0.1:8080/debug/vars
+
+gin 框架下，我们可以通过如下方式快速的导入。(expvar包)
+router := gin.Default()
+router.GET("/debug/vars", gin.WrapH(expvar.Handler()))
+
+-------------------------gin更常用的暴露程序指标的方式----------------------------------
+为程序增加 Prometheus 格式的 metrics 指标
+Prometheus 提供了 promtheus-go 库来帮助我们暴露程序的内部指标。
+
+对于  gin 框架的使用者而言，我们只需要增加如下代码，即可在程序中暴露对应的 metrics 指标。
+
+******************
+import "github.com/prometheus/client_golang/prometheus/promhttp"
+
+router := gin.New()
+router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+***********************************
+
+当程序正常运行后，我们可以看到程序新增了 /metrics 的 endpoint。
+http://host:port/metrics
+一些指标数据以 Prometheus 格式输出，这是因为 Go 客户端库默认在我们暴露的全局默认指标注册表中注册了一些关于 promhttp 处理器和运行时间相关的默认指标，根据不同指标名称的前缀可以看出：
+
+go_前缀：是关于 Go 运行时相关的指标，比如垃圾回收时间、goroutine 数量等，这些都是 Go 客户端库特有的，其他语言的客户端库可能会暴露各自语言的其他运行时指标。
+promhttp_前缀：来自 promhttp 工具包的相关指标，用于跟踪对指标请求的处理。
+那么需要如何定义自定义指标呢，首先我们需要知道，在 Prometheus 的世界里，指标数据的类型以及结构：
+
+Gauges: 表示指标值是可以上升或下降的，在 prometheus 的 sdk 中 暴露了 Set ()、Inc ()、Dec ()、Add () 和 Sub () 这些函数来更改指标值
+Counters: 代表一种样本数据单调递增的指标，即只增不减，除非监控系统发生了重置。所以该对象下面只有 Inc () 和 Add () 两个函数，而要实际计算趋势的时候，我们一般会使用的 rate () 函数会自动处理
+Histograms: Prometheus 中的直方图是累积值，即每个区间的数值总计，每一个后续的 bucket 都包含前一个 bucket 的观察计数，所有 bucket 的下限都从 0 开始的。直方图会自动对数值的分布进行分类和计数，所以它只有一个 Observe () 方法，每当你在代码中处理要跟踪的数据时，就会调用这个方法
+Summaries: 与 Histogram 类似类型，用于表示一段时间内的数据采样结果（通常是请求持续时间或响应大小等），但它直接存储了分位数（通过客户端计算，然后展示出来），而不是通过区间计算
+Labels: 我们都知道，在 prometheus 中，每一个指标项对应到不同的 label 上会形成唯一的一个 metrics 来描述具体的指标，比如 /api/user 的请求，使用了 label 之后即可能存在 http_request_user_counter{method="GET"} 和 http_request_user_counter{method="POST"} 两个指标
+备注: 当然 label 的设计也需要合理，不然当业务比较复杂时，label 会使得整个 指标呈指数级别增长。

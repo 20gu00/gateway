@@ -1,0 +1,33 @@
+Swagger本质上是一种用于描述使用JSON表示的RESTful API的接口描述语言。Swagger与一组开源软件工具一起使用，以设计、构建、记录和使用RESTful Web服务。Swagger包括自动文档，代码生成和测试用例生成。
+
+gin框架，使用gin-swagger库以使用Swagger 2.0自动生成RESTful API文档。
+
+想要使用gin-swagger为你的代码自动生成接口文档，一般需要下面三个步骤：
+按照swagger要求给接口代码添加声明式注释，具体参照声明式注释格式。
+使用swag工具扫描代码自动生成API接口文档数据
+使用gin-swagger渲染在线接口文档页面
+
+go get -u github.com/swaggo/swag/cmd/swag
+(install)
+或者去源码下手动build
+或者去下载release
+
+项目根目录swag init
+
+
+Summary:列表摘要
+Tag:帖子相关的接口
+json application/json
+jsonresult.JSONResult{data=[]string}
+jsonresult.JSONResult{data=proto.Order}
+@Param body body dto.AdminLoginInput true "body"
+
+
+body query|param
+
+
+可以将上一层的处理response也json编码放进ctx的key中传递
+
+
+// @Param username query string true "用户名"
+// @Param password query string true "密码"

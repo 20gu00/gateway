@@ -1,0 +1,436 @@
+--------------------------github.com/gomodule/redigo---------------
+连接:
+func main() {
+	conn,err:=redis.Dial("tcp", "localhost:6379")
+	if err!=nil {
+		fmt.Println("连接出错",err)
+		return
+	}
+	defer conn.Close()
+	res,err:=conn.Do("ping")
+	fmt.Println(res)
+
+}
+
+使用:
+func main() {
+	conn,err:=redis.Dial("tcp", "localhost:6379")
+	if err!=nil {
+		fmt.Println("连接出错",err)
+		return
+	}
+	defer conn.Close()
+	res,err:=conn.Do("ping")
+	fmt.Println(res)
+	// 1 字符串 set  get
+	//res,_=conn.Do("set","name","lxx")
+	//fmt.Println(res)
+	//res,_=redis.String(conn.Do("get","name"))
+	//fmt.Println(res)
+
+	//2 MSet   MGet
+	//conn.Do("MSet", "name", "刘清政", "age", 19)
+	//r, _ := redis.Strings(conn.Do("MGet", "name", "age"))
+	//fmt.Println(r)
+
+	// 3 expire
+	//res,err=conn.Do("expire", "name", 5)
+
+	//4 lpush lpop
+	conn.Do("lpush", "hobby", "篮球", "足球", "乒乓球")
+	r, _ := redis.String(conn.Do("lpop", "hobby"))
+	fmt.Println(r)
+
+	// 5 hset  hget
+	conn.Do("HSet", "userinfo", "name", "lxx")
+	r,_ = redis.String(conn.Do("HGet", "userinfo", "name"))
+	fmt.Println(r)
+
+
+}
+
+
+连接池:
+func main() {
+	var pool *redis.Pool
+	pool = &redis.Pool{
+		MaxIdle:     10,  //最初的连接数量
+		MaxActive:   0,   //连接池最大连接数量,（0表示自动定义），按需分配
+		IdleTimeout: 300, //连接关闭时间 300秒 （300秒不使用自动关闭）
+		Dial: func() (redis.Conn, error) { //要连接的redis数据库
+			return redis.Dial("tcp", "localhost:6379")
+		},
+	}
+	conn := pool.Get() //从连接池，取一个链接
+	defer conn.Close()
+	res, _ := conn.Do("ping")
+	fmt.Println(res)
+
+}
+
+
+go-redis 的连接池配置直接在NewClient中配置参数即可,并且NewClient，默认是采用连接池链接。
+--------------------------github.com/go-redis/redis-------------
+
+连接:
+package main
+
+import (
+	"fmt"
+	"github.com/go-redis/redis"
+)
+
+func main() {
+	var rdb = redis.NewClient(&redis.Options{Addr:"localhost:6379", Password: "",DB: 1})
+	res,err:=rdb.Ping().Result()
+	if err != nil {
+		fmt.Println("ping 出错：",err)
+	}
+	fmt.Println(res)
+}
+
+字符串操作:
+###1---基本使用get，set，del
+get name       #时间复杂度 o(1)
+set name lxx   #时间复杂度 o(1)
+del name       #时间复杂度 o(1)
+###2---其他使用incr,decr,incrby,decrby
+incr age  #对age这个key的value值自增1
+decr age  #对age这个key的value值自减1
+incrby age 10  #对age这个key的value值增加10
+decrby age 10  #对age这个key的value值减10
+#统计网站访问量（单线程无竞争，天然适合做计数器）
+#缓存mysql的信息（json格式）
+#分布式id生成（多个机器同时并发着生成，不会重复）
+###3---set，setnx，setxx
+set name lxx  #不管key是否存在，都设置
+setnx name lxx #key不存在时才设置（新增操作）
+set name lxx nx #同上
+set name lxx xx #key存在，才设置（更新操作）
+###4---mget mset
+mget key1 key2 key3     #批量获取key1，key2.。。时间复杂度o(n)
+mset key1 value1 key2 value2 key3 value3    #批量设置时间复杂度o(n)
+#n次get和mget的区别
+#n次get时间=n次命令时间+n次网络时间
+#mget时间=1次网络时间+n次命令时间
+###5---其他：getset，append，strlen
+getset name lxxnb #设置新值并返回旧值 时间复杂度o(1)
+append name 666 #将value追加到旧的value 时间复杂度o(1)
+strlen name  #计算字符串长度(注意中文)  时间复杂度o(1)
+###6---其他：incrybyfloat,getrange,setrange
+increbyfloat age 3.5  #为age自增3.5，传负值表示自减 时间复杂度o(1)
+getrange key start end #获取字符串制定下标所有的值  时间复杂度o(1)
+setrange key index value #从指定index开始设置value值  时间复杂度o(1)
+
+go:
+//1 Set : expiration=0表示无过期时间
+res, err = rdb.Set("name", "lxx", 3*time.Second).Result()
+if err != nil {
+    fmt.Println("设置数据失败:", err)
+}
+fmt.Println(res) // OK
+
+//2 Get
+res, err =rdb.Get("name").Result()
+if err != nil {
+    fmt.Println("设置数据失败:", err)
+}
+fmt.Println(res) // OK
+
+//3 SetNX:key不存在时才设置（新增操作）
+rdb.SetNX("name",19,0) // name存在，不会修改
+
+//4 SetXX:key存在时才设置（修改操作）
+rdb.SetXX("name","pyy",0)
+rdb.SetXX("hobby","football",0) // 不会新增成功
+
+// 5 Incr
+rdb.Incr("age")
+
+// 6 strlen
+l,_:=rdb.StrLen("name").Result()
+fmt.Println(l)
+
+
+列表操作:
+##############插入操作##############
+#rpush 从右侧插入
+rpush key value1 value2 ...valueN  #时间复杂度为o(1~n)
+#lpush 从左侧插入
+#linsert
+linsert key before|after value newValue   #从元素value的前或后插入newValue 时间复杂度o(n) ，需要遍历列表
+linsert listkey before b java
+linsert listkey after b php
+
+
+##############删除操作##############
+lpop key #从列表左侧弹出一个item 时间复杂度o(1)
+
+rpop key #从列表右侧弹出一个item 时间复杂度o(1)
+
+lrem key count value
+#根据count值，从列表中删除所有value相同的项 时间复杂度o(n)
+1 count>0 从左到右，删除最多count个value相等的项
+2 count<0 从右向左，删除最多 Math.abs(count)个value相等的项
+3 count=0 删除所有value相等的项
+lrem listkey 0 a #删除列表中所有值a
+lrem listkey -1 c #从右侧删除1个c
+
+ltrim key start end #按照索引范围修剪列表 o(n)
+ltrim listkey 1 4 #只保留下表1--4的元素
+
+
+##############查询操作##############
+lrange key start end #包含end获取列表指定索引范围所有item  o(n)
+lrange listkey 0 2
+lrange listkey 1 -1 #获取第一个位置到倒数第一个位置的元素
+
+lindex key index #获取列表指定索引的item  o(n)
+lindex listkey 0
+lindex listkey -1
+
+llen key #获取列表长度
+
+
+##############修改操作##############
+lset key index newValue #设置列表指定索引值为newValue o(n)
+lset listkey 2 ppp #把第二个位置设为ppp
+
+
+go:
+//1 LPush  RPush
+rdb.LPush("hobby","篮球")
+rdb.RPush("hobby","足球")
+
+//2 LInsert
+rdb.LInsert("hobby","before","篮球","乒乓球")
+
+//3 LPop
+rdb.LPop("hobby")
+
+
+hash操作:
+###1---hget,hset,hdel
+hget key field  #获取hash key对应的field的value 时间复杂度为 o(1)
+hset key field value #设置hash key对应的field的value值 时间复杂度为 o(1)
+hdel key field #删除hash key对应的field的值 时间复杂度为 o(1)
+#测试
+hset user:1:info age 23
+hget user:1:info ag
+hset user:1:info name lxx
+hgetall user:1:info
+hdel user:1:info age
+###2---hexists,hlen
+hexists key field  #判断hash key 是否存在field 时间复杂度为 o(1)
+hlen key   #获取hash key field的数量  时间复杂度为 o(1)
+hexists user:1:info name
+hlen user:1:info  #返回数量
+
+###3---hmget，hmset
+hmget key field1 field2 ...fieldN  #批量获取hash key 的一批field对应的值  时间复杂度是o(n)
+hmset key field1 value1 field2 value2  #批量设置hash key的一批field value 时间复杂度是o(n)
+
+###4--hgetall,hvals，hkeys
+hgetall key  #返回hash key 对应的所有field和value  时间复杂度是o(n)
+hvals key   #返回hash key 对应的所有field的value  时间复杂度是o(n)
+hkeys key   #返回hash key对应的所有field  时间复杂度是o(n)
+###小心使用hgetall
+##1 计算网站每个用户主页的访问量
+hincrby user:1:info pageview count
+##2 缓存mysql的信息，直接设置hash格式
+
+
+go:
+//1 HSet
+rdb.HSet("userinfo","name","lxx")
+//2 HGet
+res,_=rdb.HGet("userinfo","name").Result()
+fmt.Println(res)
+//3 hexists
+ok,_:=rdb.HExists("userinfo","name").Result()
+fmt.Println(ok)
+
+
+集合操作:
+sadd key element #向集合key添加element（如果element存在，添加失败） o(1)
+
+srem key element #从集合中的element移除掉 o(1)
+
+scard key #计算集合大小
+
+sismember key element #判断element是否在集合中
+
+srandmember key count #从集合中随机取出count个元素，不会破坏集合中的元素
+
+spop key #从集合中随机弹出一个元素
+
+smembers key #获取集合中所有元素 ，无序，小心使用，会阻塞住
+
+sdiff user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的差集
+
+sinter user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的交集
+
+sunion user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的并集
+
+sdiff|sinter|suion + store destkey... #将差集，交集，并集结果保存在destkey集合中
+
+
+go:
+sadd key element #向集合key添加element（如果element存在，添加失败） o(1)
+
+srem key element #从集合中的element移除掉 o(1)
+
+scard key #计算集合大小
+
+sismember key element #判断element是否在集合中
+
+srandmember key count #从集合中随机取出count个元素，不会破坏集合中的元素
+
+spop key #从集合中随机弹出一个元素
+
+smembers key #获取集合中所有元素 ，无序，小心使用，会阻塞住
+
+sdiff user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的差集
+
+sinter user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的交集
+
+sunion user:1:follow user:2:follow  #计算user:1:follow和user:2:follow的并集
+
+sdiff|sinter|suion + store destkey... #将差集，交集，并集结果保存在destkey集合中
+
+
+
+有序集合操作:
+zadd key score element #score可以重复，可以多个同时添加，element不能重复 o(logN)
+
+zrem key element #删除元素，可以多个同时删除 o(1)
+
+zscore key element #获取元素的分数 o(1)
+
+zincrby key increScore element #增加或减少元素的分数  o(1)
+
+zcard key #返回元素总个数 o(1)
+
+zrank key element #返回element元素的排名（从小到大排）
+
+zrange key 0 -1 #返回排名，不带分数  o(log(n)+m) n是元素个数，m是要获取的值
+zrange player:rank 0 -1 withscores #返回排名，带分数
+
+zrangebyscore key minScore maxScore #返回指定分数范围内的升序元素 o(log(n)+m) n是元素个数，m是要获取的值
+zrangebyscore user:1:ranking 90 210 withscores #获取90分到210分的元素
+
+zcount key minScore maxScore #返回有序集合内在指定分数范围内的个数 o(log(n)+m)
+
+zremrangebyrank key start end #删除指定排名内的升序元素 o(log(n)+m)
+zremrangebyrank user:1:rangking 1 2 #删除升序排名中1到2的元素
+
+zremrangebyscore key minScore maxScore #删除指定分数内的升序元素 o(log(n)+m)
+zremrangebyscore user:1:ranking 90 210 #删除分数90到210之间的元素
+
+zrevrank #从高到低排序
+zrevrange #从高到低排序取一定范围
+zrevrangebyscore #返回指定分数范围内的降序元素
+zinterstore #对两个有序集合交集
+zunionstore #对两个有序集合求并集
+
+
+go:
+//1 zadd
+rdb.ZAdd("girls",redis.Z{100,"刘亦菲"},redis.Z{96,"迪丽热巴"},redis.Z{90,"杨颖"})
+
+//2 zcard 返回总个数
+count,_:=rdb.ZCard("girls").Result()
+fmt.Println(count)
+
+//3 ZRangeByScore  100--96分之间的
+s,_:=rdb.ZRangeByScore("girls",redis.ZRangeBy{Max: "100",Min: "96"}).Result()
+fmt.Println(s)
+// 4 ZRevRangeWithScores返回排名前2的元素
+z,_:=rdb.ZRevRangeWithScores("girls",0,1).Result()
+fmt.Println(z)
+
+
+通用操作:
+####1-keys
+#打印出所有key
+keys *
+#打印出所有以he开头的key
+keys he*
+#打印出所有以he开头，第三个字母是h到l的范围
+keys he[h-l]
+#三位长度，以he开头，？表示任意一位
+keys he？
+#keys命令一般不在生产环境中使用，生产环境key很多，时间复杂度为o(n),用scan命令
+
+####2-dbsize   计算key的总数
+dbsize #redis内置了计数器，插入删除值该计数器会更改，所以可以在生产环境使用，时间复杂度是o(1)
+
+###3-exists key 时间复杂度o(1)
+#设置a
+set a b
+#查看a是否存在
+exists a
+(integer) 1
+#存在返回1 不存在返回0
+###4-del key  时间复杂度o(1)
+删除成功返回1，key不存在返回0
+###5-expire key seconds  时间复杂度o(1)
+expire name 3 #3s 过期
+ttl name  #查看name还有多长时间过期
+persist name #去掉name的过期时间
+###6-type key  时间复杂度o(1)
+type name #查看name类型，返回string
+
+
+### 7 其他
+info命令：内存，cpu，主从相关
+client list  正在连接的会话
+client kill ip:端口
+dbsize  总共有多少个key
+flushall  清空所有
+flushdb  只清空当前库
+select 数字  选择某个库  总共16个库
+monitor  记录操作日志，夯住
+
+
+go:
+//1 Info
+res,_=rdb.Info().Result()
+fmt.Println(res)
+
+//2 Keys
+s,_:=rdb.Keys("n*").Result()
+fmt.Println(s)
+
+//3 expire
+rdb.Expire("name",3*time.Second)
+
+//4 dbsize
+count,_:=rdb.DBSize().Result()
+fmt.Println(count)
+
+//5 其他命令
+r,_:=rdb.Do("client","list").Result()
+fmt.Println(r)
+
+
+哨兵:
+func main() {
+	rdb := redis.NewFailoverClient(&redis.FailoverOptions{MasterName:"master", SentinelAddrs: []string{"127.0.0.1:26379", "127.0.0.1:26380", "127.0.0.1:26381"},})
+	_, err := rdb.Ping().Result()
+	if err != nil {
+		fmt.Println("连接出错：",err)
+		return
+	}
+}
+
+
+集群:
+func main() {
+	rdb := redis.NewClusterClient(&redis.ClusterOptions{Addrs: []string{"127.0.0.1:6379", "127.0.0.1:6379", "127.0.0.1:6379"}})
+	_, err := rdb.Ping().Result()
+	if err != nil {
+		fmt.Println("连接集群出错",err)
+		return
+	}
+}

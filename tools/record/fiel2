@@ -1,0 +1,189 @@
+session和cookie经常用来保存状态信息,一个存放在服务端,一个存放在客户端浏览器上
+cookie只支持string,session支持int,string,bool等
+
+----------------------cookie-----------------------
+cookie设置:
+c.SetCookie(name, value string, maxAge int, path, domain string, secure,httpOnly bool)
+// name：cookie的key值
+// value：cookie的value值
+// maxAge：过期时间，如果只想设置Cookie的保存路径而不想设置存活时间，可以设置为 nil
+// path：cookie 的路径
+// domain：cookie 的路径 Domain 作用域 本地调试配置成 localhost , 正式上线配置成域名
+// secure：当 secure 值为 true 时，cookie 在 HTTP 中是无效，在 HTTPS 中 才有效
+// httpOnly：是微软对 COOKIE 做的扩展。如果在 COOKIE 中设置了"httpOnly"属性，则通过程序(JS 脚本、applet 等)将无法读取到 COOKIE 信息，防止 XSS 攻击产生
+
+
+cookie的获取:
+cookie, err := c.Cookie("key值")
+
+
+案例:
+*************************************************
+package main
+
+import (
+   "fmt"
+   "github.com/gin-gonic/gin"
+)
+
+func main() {
+   r := gin.Default()
+   r.GET("set_cookie", func(c *gin.Context) {
+      c.SetCookie("name", "lxx", 60, "/", "", false, true)
+      c.SetCookie("age", "19", 600, "", "", false, true)
+      c.String(200, "cookie设置成功")
+   })
+   r.GET("get_cookie", func(c *gin.Context) {
+      name, err := c.Cookie("name")
+      if err != nil {
+         c.String(200, "cookie获取打印失败,错误是:%s",err)
+         return
+      }
+      fmt.Println("name的cookie值为：",name)
+      c.String(200, "cookie获取打印成功")
+
+   })
+   r.Run(":8080")
+}
+
+*************************************************
+
+
+案例2:
+*************************************************
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func AuthMiddleWare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取客户端cookie并校验
+		if cookie, err := c.Cookie("login"); err == nil {
+			if cookie == "yes" {
+				c.Next()
+			}
+		} else {
+			// 返回错误
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "没有登录"})
+			// 若验证不通过，不再调用后续的函数处理
+			c.Abort()
+		}
+	}
+}
+
+func main() {
+	r := gin.Default()
+	r.GET("/login", func(c *gin.Context) {
+		c.SetCookie("login", "yes", 60, "/", "", false, true)
+		// 返回信息
+		c.String(200, "Login success!")
+	})
+	r.GET("/home", AuthMiddleWare(), func(c *gin.Context) {
+		c.JSON(200, gin.H{"data": "登陆成功，能访问home"})
+	})
+	r.Run(":8080")
+}
+
+*************************************************
+
+
+-----------------------session--------------------------------
+当客户端浏览器第一次访问服务器并发送请求时，服务器端会创建一个 session 对象，生成 一个类似于 key,value 的键值对，然后将 value 保存到服务器 将 key(cookie)返回到浏览器(客 户)端。浏览器下次访问时会携带 key(cookie)，找到对应的 session(value)。
+类型多种可以不是cookie类型,keyvalue即可
+
+
+session放在内存中:
+程序重启session就没有了
+****************************************************
+package main
+
+import (
+	"fmt"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	// 创建基于 cookie 的存储引擎，lxxisnb 参数是用于加密的密钥
+	store := cookie.NewStore([]byte("lxxisnb"))
+	// 设置 session 中间件，参数 sessionid，指的是 session 的名字，也是 cookie 的名字
+	//store是前面创建的存储引擎，我们可以替换成其他存储引擎
+	r.Use(sessions.Sessions("sessionid", store))
+	r.GET("/set_session", func(c *gin.Context) {
+		//初始化 session 对象
+		session := sessions.Default(c) //设置过期时间
+		// 过期时间6h
+		session.Options(sessions.Options{MaxAge: 3600 * 6})
+		//设置 Session
+		session.Set("username", "lxx")
+		session.Save()
+		c.JSON(200, gin.H{"msg": "设置session成功----userrname:lxx"})
+	})
+
+	r.GET("/get_session", func(c *gin.Context) {
+		session := sessions.Default(c)
+		// 通过 session.Get 读取 session 值
+		username := session.Get("username")
+		fmt.Println(username)
+		c.JSON(200, gin.H{"msg": "获取session成功"})
+	})
+	r.Run(":8080")
+
+}
+****************************************************
+
+
+session放在redis中:
+
+如果我们想将 session 数据保存到 redis 中，只要将 session 的存储引擎改成 redis 即可。 使用 redis 作为存储引擎的例子,首先安装 redis 存储引擎的包
+go get github.com/gin-contrib/sessions/redis
+************************************************************
+package main
+
+import (
+	"fmt"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/redis"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	// 初始化基于 redis 的存储引擎
+	// size:redis 最大的空闲连接数
+	//network: 数通信协议tcp或者udp
+	//address:redis 地址, 格式，host:port
+	//password:redis密码
+	//最后一个参数：session 加密密钥
+	store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+	r.Use(sessions.Sessions("sessionid", store))
+	r.GET("/set_session", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Options(sessions.Options{MaxAge: 3600 * 6})
+		//设置 Session
+		session.Set("username", "pyy")
+		session.Save()
+		c.JSON(200, gin.H{"msg": "设置session到reids成功----userrname:pyy"})
+	})
+	r.GET("/get_session", func(c *gin.Context) {
+		session := sessions.Default(c)
+		// 通过 session.Get 读取 session 值
+		username := session.Get("username")
+		fmt.Println(username)
+		c.JSON(200, gin.H{"msg": "获取session成功"})
+	})
+	r.Run(":8080")
+}
+
+************************************************************
+
+各种操作后要save
+
+
+redis-cli -v
+redis-cli 3.2.9

@@ -1,0 +1,11 @@
+logConf:
+  #trace debug info warn error fatal panic
+  level: info #logrus.TraceLevel DebugLevel InfoLevel WarnLevel ErrorLevel FatalLevel PanicLevel(logrus高等级的不打印)
+  logPath: ./logs
+  logFile: gin.log
+  maxSize: 10 #Mib,每个日志文件大小
+  maxBackups: 10 #日志文件个数
+  maxAge: 1 #day,保留多少天
+  compress: true #是否压缩
+kind:
+  output: console #file consoleAndFile console

@@ -1,0 +1,36 @@
+general:
+  log_level: "trace"  #日志打印最低级别 (""可以不写)
+  #time_location: "Asia/Shanghai"
+http:
+  address: ":8000"                   #监听地址
+  read_timeout: 10                   #读取超时时长
+  write_timeout: 10                  #写入超时时长
+  max_header_bytes: 20               #最大的header大小，二进制位长度
+  allow_ip: ["127.0.0.1","192.168.23.232"]                 #白名单ip列表
+#- "127.0.0.1"  #viper获取时这样的格式会有问题
+#  "192.168.23.232"
+session:
+  redis_server: "127.0.0.1:6379"
+  redis_password: ""
+swagger:
+  title: "gateway swagger"
+  desc: "gateway的后台管理系统swagger文档"
+  host: "127.0.0.1:8880"  #"192.168.23.232:8880"  #可以是解析好的域名  192.168.23.232:8880/swagger/index.html
+  base_path: "/v2"  #""
+cluster:  #网关
+  cluster_ip: "192.168.23.232"  #本地主机ip k8s的service 即网关入口,接受请求的入口
+  cluster_port: "8080"
+  cluster_ssl_port: "4433"
+time:
+  time_loc: "Asia/Shanghai"  #设置你的时区,中国内用shanghai chongqing比较多
+proxy:
+  http:
+    addr: ":8080"                       # 监听地址, default ":8700"
+    read_timeout: 10                   # 读取超时时长
+    write_timeout: 10                  # 写入超时时长
+    max_header_bytes: 20               # 最大的header大小，二进制位长度
+  https:
+    addr: ":4433"                       # 监听地址, default ":8700"
+    read_timeout: 10                   # 读取超时时长
+    write_timeout: 10                  # 写入超时时长
+    max_header_bytes: 20               # 最大的header大小，二进制位长度

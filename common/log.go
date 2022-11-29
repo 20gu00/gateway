@@ -1,76 +1,96 @@
 package common
 
 import (
-	"context"
-	"github.com/20gu00/gateway/common/lib"
-	"github.com/gin-gonic/gin"
+	"github.com/natefinch/lumberjack"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"os"
+	"path"
 )
 
-//错误日志
-func ContextWarning(c context.Context, dltag string, m map[string]interface{}) {
-	v := c.Value("trace")
-	traceContext, ok := v.(*lib.TraceContext)
-	if !ok {
-		traceContext = lib.NewTrace()
+//初始化logrus不只是gin的请求,整个项目都可用(gin请求也可以单独通过中间件方式使用)
+var Logger *logrus.Logger
+
+func InitLogger() {
+	workDir, err := os.Getwd()
+	if err != nil {
+		logrus.Infof("获取工作目录失败")
 	}
-	lib.Log.TagWarn(traceContext, dltag, m)
+
+	viper.SetConfigName("log")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(workDir + "/conf")
+	if err := viper.ReadInConfig(); err != nil {
+		Logger.Infof("读取log配置文件失败")
+	}
+
+	Logger = logrus.New()
+
+	kind := viper.GetString("kind.output")
+	level := viper.GetString("logConf.level")
+
+	var logLevel logrus.Level
+	switch {
+	case level == "trace":
+		logLevel = logrus.TraceLevel
+	case level == "debug":
+		logLevel = logrus.DebugLevel
+	case level == "info":
+		logLevel = logrus.InfoLevel
+	case level == "warn":
+		logLevel = logrus.WarnLevel
+	case level == "error":
+		logLevel = logrus.ErrorLevel
+	case level == "fatal":
+		logLevel = logrus.FatalLevel
+	case level == "panic":
+		logLevel = logrus.PanicLevel
+	}
+
+	//默认logrus.TextFormatter{}
+	Logger.SetFormatter(&logrus.JSONFormatter{})
+
+	Logger.SetLevel(logLevel)
+
+	switch {
+	case kind == "console":
+		Logger.SetOutput(os.Stdout)
+	case kind == "file":
+		logOutputFile(Logger)
+	case kind == "consoleAndFile":
+		go Logger.SetOutput(os.Stdout)
+		go logOutputFile(Logger)
+	default:
+		logrus.Infof("log的配置文件配置kind不符合格式")
+	}
+
+	Logger.Infof("logger配置完成")
 }
 
-//错误日志
-func ContextError(c context.Context, dltag string, m map[string]interface{}) {
-	v := c.Value("trace")
-	traceContext, ok := v.(*lib.TraceContext)
-	if !ok {
-		traceContext = lib.NewTrace()
+func logOutputFile(logger *logrus.Logger) {
+	workDir, err := os.Getwd()
+	if err != nil {
+		logrus.Infof("获取工作目录失败")
 	}
-	lib.Log.TagError(traceContext, dltag, m)
+
+	viper.SetConfigName("log")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(workDir + "/conf")
+	if err := viper.ReadInConfig(); err != nil {
+		logger.Infof("读取log配置文件失败")
+	}
+
+	logFile := path.Join(viper.GetString("logConf.logPath"), viper.GetString("logConf.logFile"))
+	logConf := &lumberjack.Logger{
+		Filename:   logFile, //如果不是代码中比如os.Open等操作打开文件,记得设置好文件的权限
+		MaxSize:    viper.GetInt("logConf.maxSize"),
+		MaxBackups: viper.GetInt("logConf.maxBackups"),
+		MaxAge:     viper.GetInt("logConf.maxAge"),
+		Compress:   viper.GetBool("logConf.compress"),
+	}
+	//fmt.Println(logConf) //直接打印出&{},也可以使用*解引用
+	logger.SetOutput(logConf)
+	return
 }
 
-//普通日志
-func ContextNotice(c context.Context, dltag string, m map[string]interface{}) {
-	v := c.Value("trace")
-	traceContext, ok := v.(*lib.TraceContext)
-	if !ok {
-		traceContext = lib.NewTrace()
-	}
-	lib.Log.TagInfo(traceContext, dltag, m)
-}
-
-//错误日志
-func ComLogWarning(c *gin.Context, dltag string, m map[string]interface{}) {
-	traceContext := GetGinTraceContext(c)
-	lib.Log.TagError(traceContext, dltag, m)
-}
-
-//普通日志
-func ComLogNotice(c *gin.Context, dltag string, m map[string]interface{}) {
-	traceContext := GetGinTraceContext(c)
-	lib.Log.TagInfo(traceContext, dltag, m)
-}
-
-// 从gin的Context中获取数据
-func GetGinTraceContext(c *gin.Context) *lib.TraceContext {
-	// 防御
-	if c == nil {
-		return lib.NewTrace()
-	}
-	traceContext, exists := c.Get("trace")
-	if exists {
-		if tc, ok := traceContext.(*lib.TraceContext); ok {
-			return tc
-		}
-	}
-	return lib.NewTrace()
-}
-
-// 从Context中获取数据
-func GetTraceContext(c context.Context) *lib.TraceContext {
-	if c == nil {
-		return lib.NewTrace()
-	}
-	traceContext := c.Value("trace")
-	if tc, ok := traceContext.(*lib.TraceContext); ok {
-		return tc
-	}
-	return lib.NewTrace()
-}
+//有些日志是gin框架的日志,照样自主控制输出,这边控制不了

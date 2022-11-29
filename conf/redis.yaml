@@ -1,0 +1,10 @@
+redis:  #主要是session用
+  proxy_list: 127.0.0.1:6379 #address
+  #- "127.0.0.1:6379"
+  conn_timeout: 500
+  password: ""
+  db: 0
+  read_timeout: 1000
+  write_timeout: 1000
+  max_active: 200
+  max_idle: 500  #size 最大的空闲连接数

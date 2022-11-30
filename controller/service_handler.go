@@ -7,6 +7,7 @@ import (
 	"github.com/20gu00/gateway/model"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
 	"os"
@@ -84,9 +85,9 @@ func ServiceListHandler(c *gin.Context) {
 		}
 
 		//tcp(添加tcp服务时的serviceAddr)
-		if serviceDetail.BaseInfo.LoadType == common.LoadTypeTCP {
-			serviceAddr = fmt.Sprintf("%s:%d", clusterIp, serviceDetail.Tcp.Port) //tcp端口
-		}
+		//if serviceDetail.BaseInfo.LoadType == common.LoadTypeTCP {
+		//	serviceAddr = fmt.Sprintf("%s:%d", clusterIp, serviceDetail.Tcp.Port) //tcp端口
+		//}
 
 		//获取实际的工作负载(服务地址)(创建服务时的ip列表)
 		ipList := serviceDetail.LoadBalance.GetIpList()
@@ -150,7 +151,7 @@ func ServiceDeleteHandler(c *gin.Context) {
 	}
 
 	serviceInfo.IsDelete = 1 //软删除
-	if tx := dao.DB.Model(serviceInfo).Where("id=?", p.ID).Update("is_delete", 1); tx.Error != nil {
+	if tx := dao.DB.Model(serviceInfo).Where("id =? ", p.ID).Update("is_delete", 1); tx.Error != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"msg": tx.Error,
 		})
@@ -281,6 +282,7 @@ func ServiceAddHttpHandler(c *gin.Context) {
 			"msg":  "输入的请求参数不正确",
 			"data": err.Error(),
 		})
+		return
 	}
 
 	//实际工作负载ip和权重
@@ -291,12 +293,35 @@ func ServiceAddHttpHandler(c *gin.Context) {
 			"data_ipList": strings.Split(p.IpList, ","),
 			"data_Weight": strings.Split(p.WeightList, ","),
 		})
-
 		return
 	}
 
 	//这类型的添加,设计到多张表,往往组要servicedetail,修改多张表需要开启事务,这里使用本地事务
-	db := dao.DB
+	//db := dao.DB  那么其他也是用这个连接的数据库操作就会出错,只是这里开启了事务
+	//获取当前工作目录,一般是项目目录(go.mod)
+	workDir, err := os.Getwd()
+	if err != nil {
+		common.Logger.Infof("获取工作目录失败")
+		return
+	}
+
+	//读取配置文件
+	viper.SetConfigName("mysql")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(workDir + "/conf") //可多个
+	if err := viper.ReadInConfig(); err != nil {
+		common.Logger.Infof("mysql配置文件读取失败", err.Error())
+		return
+	}
+
+	//使用配置文件
+	dsn := fmt.Sprintf(viper.GetString("mysql.sourceName"))
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Println(dsn)
+		common.Logger.Infof("连接mysql失败")
+		return
+	}
 	db.Begin()
 
 	serviceInfo := &model.ServiceInfo{
@@ -304,12 +329,13 @@ func ServiceAddHttpHandler(c *gin.Context) {
 	}
 
 	//服务名称冲突校验
-	if tx := db.Where(serviceInfo).First(serviceInfo); tx.Error == nil {
+	//query
+	if row := db.Where(serviceInfo).Where("is_delete = 0").First(serviceInfo).RowsAffected; row == 1 {
 		db.Rollback()
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2002,
 			"msg":  "服务已存在,该服务名称已经被使用",
-			"data": tx.Error,
+			"data": row,
 		})
 		return
 	}
@@ -319,12 +345,12 @@ func ServiceAddHttpHandler(c *gin.Context) {
 		Rule:     p.Rule,
 	}
 	//判断接入类型(前缀或者域名)和接入的前缀(路径)或域名是否冲突
-	if tx := db.Where(httpSearch).First(httpSearch); tx.Error == nil {
+	if row := db.Where(serviceInfo).Where("is_delete = 0").Where(httpSearch).First(httpSearch).RowsAffected; row == 1 {
 		db.Rollback()
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2003,
 			"msg":  "服务的接入前缀或域名已存在", //网关统一代理全部后端实际的服务
-			"data": tx.Error,
+			"data": row,
 		})
 		return
 	}
@@ -523,245 +549,5 @@ func ServiceUpdateHttpHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"msg":  "修改http服务成功",
-	})
-}
-
-func ServiceAddTcpHandler(c *gin.Context) {
-	p := new(model.ServiceAddTcpInput)
-	if err := c.ShouldBind(p); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2000,
-			"msg":  "输入的请求参数不正确",
-			"data": err.Error(),
-		})
-	}
-
-	db := dao.DB
-
-	infoSearch := &model.ServiceInfo{
-		ServiceName: p.ServiceName,
-		IsDelete:    0, //没有删除的用户
-	}
-
-	if tx := db.Where(infoSearch).First(infoSearch); tx.Error == nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2002,
-			"msg":  "服务已存在,该服务名称已经被使用(tcp)",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	tcpRuleSearch := &model.Service_tcp{
-		Port: p.Port,
-	}
-	if tx := db.Where(tcpRuleSearch).First(tcpRuleSearch); tx.Error == nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2003,
-			"msg":  "端口被占用(tcp)",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	if len(strings.Split(p.IpList, ",")) != len(strings.Split(p.WeightList, ",")) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":        2004,
-			"msg":         "ip列表与权重设置不匹配",
-			"data_ipList": strings.Split(p.IpList, ","),
-			"data_weight": strings.Split(p.WeightList, ","),
-		})
-		return
-	}
-
-	db.Begin()
-	serviceInfo := &model.ServiceInfo{
-		LoadType:    common.LoadTypeTCP,
-		ServiceName: p.ServiceName,
-		ServiceDesc: p.ServiceDesc,
-	}
-	if tx := db.Save(serviceInfo); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2005,
-			"msg":  "写入service基本表失败",
-		})
-		return
-	}
-
-	loadBalanceDao := &model.LoadBalance{
-		ServiceId:  int(serviceInfo.ID),
-		RoundType:  p.RoundType,
-		IpList:     p.IpList,
-		WeightList: p.WeightList,
-		ForbidList: p.ForbidList,
-	}
-	if tx := db.Save(loadBalanceDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2006,
-			"msg":  "写入loadBalance表失败",
-		})
-		return
-	}
-
-	tcpDao := &model.Service_tcp{
-		ServiceId: int(serviceInfo.ID),
-		Port:      p.Port,
-	}
-	if tx := db.Save(tcpDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2007,
-			"msg":  "写入tcp表失败",
-		})
-		return
-	}
-
-	accessControlDao := &model.AccessControl{
-		ServiceId:         int(serviceInfo.ID),
-		OpenAuth:          p.OpenAuth,
-		BlackList:         p.BlackList,
-		WhiteList:         p.WhiteList,
-		WhiteHostName:     p.WhiteHostName,
-		ClientIPFlowLimit: p.ClientIPFlowLimit,
-		ServiceFlowLimit:  p.ServiceFlowLimit,
-	}
-	if tx := db.Save(accessControlDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2008,
-			"msg":  "写入accessControl表失败",
-		})
-		return
-	}
-
-	db.Commit()
-	c.JSON(http.StatusBadRequest, gin.H{
-		"code": 0,
-		"msg":  "添加tcp服务成功",
-	})
-}
-
-func ServiceUpdateTcpHandler(c *gin.Context) {
-	p := new(model.ServiceUpdateTcpInput)
-	if err := c.ShouldBind(p); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2000,
-			"msg":  "输入的请求参数不正确",
-			"data": err.Error(),
-		})
-	}
-
-	if len(strings.Split(p.IpList, ",")) != len(strings.Split(p.WeightList, ",")) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":        2004,
-			"msg":         "ip列表与权重设置不匹配",
-			"data_ipList": strings.Split(p.IpList, ","),
-			"data_weight": strings.Split(p.WeightList, ","),
-		})
-		return
-	}
-
-	db := dao.DB
-	db.Begin()
-
-	serviceInfo := &model.ServiceInfo{
-		ServiceName: p.ServiceName,
-	}
-	if tx := db.Where(serviceInfo).First(serviceInfo); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2000,
-			"msg":  "服务不存在",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	serviceDetail, err := serviceInfo.ServiceDetail(db, serviceInfo)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": 2001,
-			"msg":  "获取该服务的详情失败",
-			"data": db.Error,
-		})
-		return
-	}
-
-	seriverInfoDao := serviceDetail.BaseInfo
-	seriverInfoDao.ServiceDesc = p.ServiceDesc
-	if tx := db.Save(seriverInfoDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code": 2002,
-			"msg":  "写入service基本表失败",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	loadBalanceDao := &model.LoadBalance{}
-	if serviceDetail.LoadBalance != nil {
-		loadBalanceDao = serviceDetail.LoadBalance
-	}
-
-	loadBalanceDao.ServiceId = int(serviceInfo.ID)
-	loadBalanceDao.RoundType = p.RoundType
-	loadBalanceDao.IpList = p.IpList
-	loadBalanceDao.WeightList = p.WeightList
-	loadBalanceDao.ForbidList = p.ForbidList
-
-	if tx := db.Save(loadBalanceDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code": 2003,
-			"msg":  "写入loadbalance表失败",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	tcpRuleDao := &model.Service_tcp{}
-	if serviceDetail.Tcp != nil {
-		tcpRuleDao = serviceDetail.Tcp
-	}
-	if tx := db.Save(tcpRuleDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code": 2004,
-			"msg":  "写入tcp表失败",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	accessControlDao := &model.AccessControl{}
-	if serviceDetail.AccessControl != nil {
-		accessControlDao = serviceDetail.AccessControl
-	}
-	accessControlDao.ServiceId = int(serviceInfo.ID)
-	accessControlDao.OpenAuth = p.OpenAuth
-	accessControlDao.BlackList = p.BlackList
-	accessControlDao.WhiteList = p.WhiteList
-	accessControlDao.WhiteHostName = p.WhiteHostName
-	accessControlDao.ClientIPFlowLimit = p.ClientIPFlowLimit
-	accessControlDao.ServiceFlowLimit = p.ServiceFlowLimit
-	if tx := db.Save(accessControlDao); tx.Error != nil {
-		db.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code": 2005,
-			"msg":  "写入accessControl表失败",
-			"data": tx.Error,
-		})
-		return
-	}
-
-	db.Commit()
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "修改tcp表成功",
 	})
 }

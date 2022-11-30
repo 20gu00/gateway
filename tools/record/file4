@@ -31,3 +31,5 @@ body query|param
 
 // @Param username query string true "用户名"
 // @Param password query string true "密码"
+
+token或者session任意一种都可以做身份的校验

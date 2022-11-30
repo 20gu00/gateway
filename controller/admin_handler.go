@@ -12,12 +12,6 @@ import (
 	"time"
 )
 
-var (
-	SessionKey = "SessionKey"
-	UserName   = "userName"
-	IsLogin    = "isLogin"
-)
-
 type AdminSessionInfo struct {
 	ID        uint
 	UserName  string
@@ -120,6 +114,7 @@ func AdminLoginHandler(c *gin.Context) {
 		return
 	}
 
+	//设置token
 	token := uuid.New().String()
 	//update
 	if tx := dao.DB.Model(&u).Update("token", token); tx.Error != nil {
@@ -136,8 +131,9 @@ func AdminLoginHandler(c *gin.Context) {
 	})
 
 	common.Logger.Infof("登陆成功------")
+
 	//登陆成功设置session,含有用户部分信息
-	//设置session的内容
+	//设置session的内容(服务端保存)
 	sessionInfo := &AdminSessionInfo{
 		ID:        u.ID,
 		UserName:  u.UserName,
@@ -156,9 +152,9 @@ func AdminLoginHandler(c *gin.Context) {
 
 	//结构体->[]byte->string
 	//将用户信息也存放进session
-	session.Set(SessionKey, string(sessionBts))
-	session.Set(UserName, p.UserName)
-	session.Set(IsLogin, true)
+	session.Set(common.SessionKey, string(sessionBts))
+	session.Set(common.UserName, p.UserName)
+	session.Set(common.IsLogin, true)
 	if err := session.Save(); err != nil {
 		common.Logger.Infof("创建并保存session信息失败")
 		return
@@ -204,9 +200,9 @@ func ChangePwdHandler(c *gin.Context) {
 
 func LoginOutHandler(c *gin.Context) {
 	session := sessions.Default(c)
-	session.Delete(SessionKey)
-	session.Delete(UserName)
-	session.Delete(IsLogin)
+	session.Delete(common.SessionKey)
+	session.Delete(common.UserName)
+	session.Delete(common.IsLogin)
 
 	if err := session.Save(); err != nil {
 		common.Logger.Infof("退出登录过程删除session信息失败")
@@ -215,5 +211,39 @@ func LoginOutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"msg":  "用户退出",
+	})
+}
+
+func AdminInfoHandler(c *gin.Context) {
+	session := sessions.Default(c)                //新建Session
+	sessionInfo := session.Get(common.SessionKey) //从context中获取session的key对应的value
+
+	//将上下文中拿到的sessioninfo解码放入adminsessioninfo中
+	adminSessionInfo := &model.AdminSessionInfo{}
+
+	//序列化结构体->json字符串 反序列化json字符串->结构体信息
+	//[]byte(fmt.Sprint(sessionInfo)
+	if err := json.Unmarshal([]byte(sessionInfo.(string)), adminSessionInfo); err != nil { //fmt.Sprint打印字符串,转换成[]byte,在反序列化(本质就是处理[]byte(str))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code": 2000,
+			"msg":  "将session信息反序列化失败",
+			"data": err.Error(),
+		})
+		return
+	}
+
+	output := &model.AdminInfoOutput{
+		ID:        adminSessionInfo.ID,
+		Name:      adminSessionInfo.UserName,
+		LoginTime: adminSessionInfo.LoginTime,
+		Avatar:    "https://camo.githubusercontent.com/2b507540e2681c1a25698f246b9dca69c30548ed66a7323075b0224cbb1bf058/68747470733a2f2f676f6c616e672e6f72672f646f632f676f706865722f6669766579656172732e6a7067",
+		//Introduction: "admin超管",
+		//Roles:        []string{"admin"}   //后续可以用来做权限控制
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"msg":  "返回session信息",
+		"data": output,
 	})
 }

@@ -1,0 +1,52 @@
+127.0.0.1:8000/ping
+
+127.0.0.1:8000/metrics
+
+127.0.1.1:8000/admin/rgister
+127.0.1.1:8000/admin/rgister
+{
+ "username":"admin",
+ "password":"passwd"
+}
+
+带token
+127.0.0.1:8000/admin/changepwd
+{
+ "username":"admin",
+ "password":"passwd1"
+}
+
+127.0.0.1:8000/admin/logout
+
+127.0.0.1:8000/admin/service/add_http
+{
+ "service_name":"test1",
+ "service_desc":"测试http服务",
+ "rule_type":0,
+ "rule":"/test/ab",
+ "need_https":0,
+ "need_strip_uri":0,
+ "need_websocket":0,
+ "url_rewrite":"^/test/ab(.*) /test/ba$1",
+ "header_transfor":"add k1 v1",
+ "open_auth":1,
+ "black_list":"",
+ "white_list":"192.168.23.232",
+ "clientip_flow_limit":1,
+ "service_flow_limit":1,
+ "round_type":1,
+ "ip_list":"192.168.23.10,192.68.23.11",
+ "weight_list":"10,100",
+ "upstream_connect_timeout":10,
+ "upstream_header_timeout":10,
+ "upstream_max_idle":10,
+ "upstream_idle_timeout":10
+}
+
+127.0.0.1:8000/service/list
+{
+ "info":"t",
+ "page_num":1,
+ "page_size":10
+}
+

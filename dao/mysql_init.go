@@ -46,7 +46,7 @@ func InitMysql() {
 		model.Admin{},
 		model.Tenant{},
 		model.Service_http{},
-		model.Service_tcp{},
+		//model.Service_tcp{},
 		model.ServiceInfo{},
 	); err != nil {
 		common.Logger.Infof("创建表失败", err.Error())

@@ -12,9 +12,9 @@ const (
 	HTTPRuleTypeDomain
 )
 const (
-	ValidatorKey  = "ValidatorKey"
-	TranslatorKey = "TranslatorKey"
-	SessionKey    = "SessionKey"
+	SessionKey = "SessionKey"
+	UserName   = "userName"
+	IsLogin    = "isLogin"
 
 	DayFlowStatKey   = "day_flow_stat"
 	RedisFlowHourKey = "flow_hour_count"
@@ -30,6 +30,6 @@ const (
 var (
 	LoadTypeMap = map[int]string{
 		LoadTypeHTTP: "HTTP",
-		LoadTypeTCP:  "TCP",
+		//LoadTypeTCP:  "TCP",
 	}
 )

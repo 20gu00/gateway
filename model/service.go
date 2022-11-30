@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -42,23 +43,23 @@ func (s *ServiceInfo) PageList(db *gorm.DB, input *ServiceListInput) ([]ServiceI
 func (s *ServiceInfo) Find(c *gin.Context, db *gorm.DB, search *ServiceInfo) (*ServiceInfo, error) {
 	result := &ServiceInfo{}
 	//根据该结构体跟数据库表的映射关系(search)不用Table(s.TableName())也行
-	tx := db.Table(s.TableName()).Where(search).Find(result)
-	if tx.Error != nil {
+	row := db.Table(s.TableName()).Where(search).First(result).RowsAffected
+	if row != 1 {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code": 2000,
 			"msg":  "该service不存在",
-			"data": tx.Error,
+			"data": row,
 		})
-		return nil, nil
+		return nil, errors.New("该service不存在")
 	}
 
-	return result, tx.Error
+	return result, nil
 }
 
 type ServiceDetail struct {
-	BaseInfo      *ServiceInfo
-	Http          *Service_http
-	Tcp           *Service_tcp
+	BaseInfo *ServiceInfo
+	Http     *Service_http
+	//Tcp           *Service_tcp
 	AccessControl *AccessControl
 	LoadBalance   *LoadBalance
 }
@@ -84,14 +85,14 @@ func (s *ServiceInfo) ServiceDetail(db *gorm.DB, search *ServiceInfo) (*ServiceD
 		return nil, tx.Error
 	}
 
-	//Tcp表
-	tcpSearch := &Service_tcp{
-		ServiceId: int(search.ID),
-	}
-	tcpResult := new(Service_tcp)
-	if tx := db.Table(tcpSearch.TableName()).Where(tcpSearch).Find(tcpResult); tx.Error != nil {
-		return nil, tx.Error
-	}
+	////Tcp表
+	//tcpSearch := &Service_tcp{
+	//	ServiceId: int(search.ID),
+	//}
+	//tcpResult := new(Service_tcp)
+	//if tx := db.Table(tcpSearch.TableName()).Where(tcpSearch).Find(tcpResult); tx.Error != nil {
+	//	return nil, tx.Error
+	//}
 
 	//access_control
 	acSearch := &AccessControl{
@@ -112,9 +113,9 @@ func (s *ServiceInfo) ServiceDetail(db *gorm.DB, search *ServiceInfo) (*ServiceD
 	}
 
 	serviceDetail := &ServiceDetail{
-		BaseInfo:      search,
-		Http:          httpResult,
-		Tcp:           tcpResult,
+		BaseInfo: search,
+		Http:     httpResult,
+		//Tcp:           tcpResult,
 		LoadBalance:   lbResult,
 		AccessControl: acResult,
 	}
@@ -135,16 +136,6 @@ type Service_http struct {
 
 func (*Service_http) TableName() string {
 	return "service_http"
-}
-
-type Service_tcp struct {
-	ID        int `gorm:"primary_key" json:"id"`
-	ServiceId int `json:"service_id"`
-	Port      int `json:"port"`
-}
-
-func (*Service_tcp) TableName() string {
-	return "service_tcp"
 }
 
 type LoadBalance struct {
@@ -250,7 +241,7 @@ type ServiceAddHttpInput struct {
 	OpenAuth          int    `json:"open_auth"`           //关键词
 	BlackList         string `json:"black_list"`          //黑名单ip
 	WhiteList         string `json:"white_list"`          //白名单ip
-	ClientipFlowLimit int    `json:"clientip_flow_limit"` //客户端ip限流
+	ClientipFlowLimit int    `json:"clientip_flow_limit"` //是否开启客户端ip限流
 	ServiceFlowLimit  int    `json:"service_flow_limit"`  //服务端限流
 
 	//service_load_balance
@@ -291,36 +282,7 @@ type ServiceUpdateHttpInput struct {
 	UpstreamMaxIdle        int    `json:"upstream_max_idle"`        //最大空闲链接数
 }
 
-type ServiceAddTcpInput struct {
-	ServiceName       string `json:"service_name"`
-	ServiceDesc       string `json:"service_desc"`
-	Port              int    `json:"port"`
-	HeaderTransfor    string `json:"header_transfor"`
-	OpenAuth          int    `json:"open_auth"`
-	BlackList         string `json:"black_list"`
-	WhiteList         string `json:"white_list"`
-	WhiteHostName     string `json:"white_host_name"`
-	ClientIPFlowLimit int    `json:"clientip_flow_limit"`
-	ServiceFlowLimit  int    `json:"service_flow_limit"`
-	RoundType         int    `json:"round_type"`
-	IpList            string `json:"ip_list"`
-	WeightList        string `json:"weight_list"`
-	ForbidList        string `json:"forbid_list"`
-}
-
-type ServiceUpdateTcpInput struct {
-	ID                int64  `json:"id"`
-	ServiceName       string `json:"service_name"`
-	ServiceDesc       string `json:"service_desc"`
-	Port              int    `json:"port"`
-	OpenAuth          int    `json:"open_auth"`
-	BlackList         string `json:"black_list"`
-	WhiteList         string `json:"white_list"`
-	WhiteHostName     string `json:"white_host_name"`
-	ClientIPFlowLimit int    `json:"clientip_flow_limit"`
-	ServiceFlowLimit  int    `json:"service_flow_limit"`
-	RoundType         int    `json:"round_type"`
-	IpList            string `json:"ip_list"`
-	WeightList        string `json:"weight_list"`
-	ForbidList        string `json:"forbid_list"`
+type ServiceStatOutput struct {
+	Today     []int64 `json:"today" form:"today" comment:"今日流量" example:"" validate:""`         //列表
+	Yesterday []int64 `json:"yesterday" form:"yesterday" comment:"昨日流量" example:"" validate:""` //列表
 }

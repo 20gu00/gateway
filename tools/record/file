@@ -1,5 +1,5 @@
 create database gateway charset=utf8
-
+go time.Time<->mysql datetime
 
 -----------log
 集成logrus

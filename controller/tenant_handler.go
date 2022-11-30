@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func  TenantListHandler(ctx *gin.Context) {
+func TenantListHandler(ctx *gin.Context) {
 	p := new(model.TenantListInput)
 	if err := ctx.ShouldBind(p); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -70,7 +70,7 @@ func  TenantListHandler(ctx *gin.Context) {
 	return
 }
 
-func  TenantDetailHandler(ctx *gin.Context) {
+func TenantDetailHandler(ctx *gin.Context) {
 	params := new(model.TenantDetailInput)
 	if err := ctx.ShouldBind(params); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -104,7 +104,7 @@ func  TenantDetailHandler(ctx *gin.Context) {
 	})
 }
 
-func  TenantDeleteHandler(c *gin.Context) {
+func TenantDeleteHandler(c *gin.Context) {
 	params := new(model.TenantDetailInput)
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -148,7 +148,7 @@ func  TenantDeleteHandler(c *gin.Context) {
 	return
 }
 
-func  TenantAddHandler(c *gin.Context) {
+func TenantAddHandler(c *gin.Context) {
 	params := new(model.TenantAddHttpInput)
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -204,7 +204,7 @@ func  TenantAddHandler(c *gin.Context) {
 	return
 }
 
-func  TenantUpdateHandler(c *gin.Context) {
+func TenantUpdateHandler(c *gin.Context) {
 	params := new(model.TenantUpdateInput)
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -257,7 +257,7 @@ func  TenantUpdateHandler(c *gin.Context) {
 	return
 }
 
-func  TenantStatHandler(c *gin.Context) {
+func TenantStatHandler(c *gin.Context) {
 	params := new(model.TenantDetailInput)
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -310,7 +310,7 @@ func  TenantStatHandler(c *gin.Context) {
 	yesterdayStat := []int64{}
 	yesterTime := currentTime.Add(-1 * time.Duration(time.Hour*24))
 	for i := 0; i <= 23; i++ {
-		dateTime := time.Date(yesterTime.Year(), yesterTime.Month(), yesterTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+		dateTime := time.Date(yesterTime.Year(), yesterTime.Month(), yesterTime.Day(), i, 0, 0, 0, timeLocation)
 		hourData, _ := counter.GetHourData(dateTime)
 		yesterdayStat = append(yesterdayStat, hourData)
 	}

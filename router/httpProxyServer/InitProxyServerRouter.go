@@ -15,7 +15,7 @@ func InitProxyRouter() *gin.Engine {
 		httpProxyServerMiddleware.HttpProxyModeMiddleware(),      //请求接入方式
 		httpProxyServerMiddleware.HttpFlowCountMiddleware(),      //流量统计
 		httpProxyServerMiddleware.HttpFlowLimitMiddleware(),      //限流
-		middleware.HttpJwtAuthTokenMiddleware(),                  //基于jwt的认证(可以实现一定的权限认证)
+		httpProxyServerMiddleware.HttpJwtAuthTokenMiddleware(),   //基于jwt的认证(可以实现一定的权限认证)
 		httpProxyServerMiddleware.HttpJwtFlowCountMiddleware(),   //jwt的流量统计
 		httpProxyServerMiddleware.HttpJwtFlowLimitMiddleware(),   //租户的流量统计
 		httpProxyServerMiddleware.HttpWhiteListMiddleware(),      //白名单

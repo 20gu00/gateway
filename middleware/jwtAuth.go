@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/20gu00/gateway/dao"
 	"github.com/20gu00/gateway/model"
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,6 @@ func JwtAuthTokenMiddleware() gin.HandlerFunc {
 		token := strings.ReplaceAll(ctx.GetHeader("Authorization"), "Bearer ", "") //返回s的副本,new替换old->token
 		u := new(model.Admin)
 		row := dao.DB.Where("token = ?", token).First(u).RowsAffected
-		fmt.Println(row)
 		if row != 1 {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"code": 2000,

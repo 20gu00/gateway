@@ -12,7 +12,7 @@ import (
 
 func TenantListHandler(ctx *gin.Context) {
 	p := new(model.TenantListInput)
-	if err := ctx.ShouldBind(p); err != nil {
+	if err := ctx.ShouldBindJSON(p); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -67,12 +67,11 @@ func TenantListHandler(ctx *gin.Context) {
 		"msg":  "按页",
 		"data": output,
 	})
-	return
 }
 
 func TenantDetailHandler(ctx *gin.Context) {
 	params := new(model.TenantDetailInput)
-	if err := ctx.ShouldBind(params); err != nil {
+	if err := ctx.ShouldBindJSON(params); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -87,8 +86,9 @@ func TenantDetailHandler(ctx *gin.Context) {
 			ID: uint(params.ID),
 		},
 	}
-	err := db.Where(search).Find(search)
-	if err != nil {
+	//查询某条记录最好使用first,find如果没有相应的记录会将查询条件插入结构体并返回,不会报错
+	err := db.Table(search.TableName()).Where(search).First(search) //row .RowAffect
+	if err.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": 2001,
 			"msg":  "获取tenant的相信信息失败",
@@ -97,7 +97,7 @@ func TenantDetailHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusInternalServerError, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"msg":  "成功获取tenant的详细信息",
 		"data": search,
@@ -106,7 +106,7 @@ func TenantDetailHandler(ctx *gin.Context) {
 
 func TenantDeleteHandler(c *gin.Context) {
 	params := new(model.TenantDetailInput)
-	if err := c.ShouldBind(params); err != nil {
+	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -122,7 +122,7 @@ func TenantDeleteHandler(c *gin.Context) {
 		},
 	}
 	err := db.Where(search).Find(search)
-	if err != nil {
+	if err.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2001,
 			"msg":  "未找到该tenant",
@@ -150,7 +150,7 @@ func TenantDeleteHandler(c *gin.Context) {
 
 func TenantAddHandler(c *gin.Context) {
 	params := new(model.TenantAddHttpInput)
-	if err := c.ShouldBind(params); err != nil {
+	if err := c.ShouldBindJSON(params); err != nil { //会判断参数的类型是否合适
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -206,7 +206,7 @@ func TenantAddHandler(c *gin.Context) {
 
 func TenantUpdateHandler(c *gin.Context) {
 	params := new(model.TenantUpdateInput)
-	if err := c.ShouldBind(params); err != nil {
+	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -222,7 +222,7 @@ func TenantUpdateHandler(c *gin.Context) {
 		},
 	}
 	err := db.Where(search).Find(search)
-	if err != nil {
+	if err.Error != nil { //tx一般不为空,要判断的是tx.Error
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2001,
 			"msg":  "未找到该tenant",
@@ -259,7 +259,7 @@ func TenantUpdateHandler(c *gin.Context) {
 
 func TenantStatHandler(c *gin.Context) {
 	params := new(model.TenantDetailInput)
-	if err := c.ShouldBind(params); err != nil {
+	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",

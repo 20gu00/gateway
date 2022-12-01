@@ -23,7 +23,7 @@ func (*ServiceInfo) TableName() string {
 //列出service信息(base表)
 func (s *ServiceInfo) PageList(db *gorm.DB, input *ServiceListInput) ([]ServiceInfo, int64, error) {
 	total := int64(0)
-	list := []ServiceInfo{}
+	list := []ServiceInfo{} //切片
 	offset := (input.PageNum - 1) * input.PageSize
 
 	query := db.Table(s.TableName()).Where("is_delete=0")
@@ -31,11 +31,11 @@ func (s *ServiceInfo) PageList(db *gorm.DB, input *ServiceListInput) ([]ServiceI
 		query = query.Where("service_name like ? or service_desc like ?", "%"+input.Info+"%", "%"+input.Info+"%")
 	}
 
-	//原生sql语句limit 10  limit 1,10  asc升 desc降
-	if err := query.Limit(input.PageSize).Offset(offset).Order("id desc").Find(&list); err != nil {
-		return nil, 0, err.Error
+	//原生sql语句limit 10  limit 1,10([1:10)) 索引0开始  asc升 desc降
+	tx := query.Limit(input.PageSize).Offset(offset).Order("id desc").Find(&list)
+	if tx.Error != nil && tx.Error != gorm.ErrRecordNotFound { //数据库查找不到数据也是一种错误(匹配不到相应的数据)
+		return nil, 0, tx.Error
 	}
-
 	query.Limit(input.PageSize).Offset(offset).Count(&total)
 	return list, total, nil
 }
@@ -123,13 +123,13 @@ func (s *ServiceInfo) ServiceDetail(db *gorm.DB, search *ServiceInfo) (*ServiceD
 }
 
 type Service_http struct {
-	ID             int    `gorm:"primary_key" json:"id"`
-	ServiceId      int    `json:"service_id"`
-	RuleType       int    `json:"rule_type"`
-	Rule           string `json:"rule"`
-	NeedHttps      int    `json:"need_https"`
-	NeedStrip_uri  int    `json:"need_strip_uri"`
-	NeedWebsocket  int    `json:"need_websocket"`
+	ID            int    `gorm:"primary_key" json:"id"`
+	ServiceId     int    `json:"service_id"`
+	RuleType      int    `json:"rule_type"`
+	Rule          string `json:"rule"`
+	NeedHttps     int    `json:"need_https"`
+	NeedStrip_uri int    `json:"need_strip_uri"`
+	//NeedWebsocket  int    `json:"need_websocket"`
 	UrlRewrite     string `json:"url_rewrite"`
 	HeaderTransfor string `json:"header_transfor"`
 }
@@ -188,7 +188,6 @@ type ServiceListInput struct {
 	Info     string `json:"info"`      //搜索关键词  `json:"info" form:"info" comment:"关键词" example:"" validate:""`
 	PageNum  int    `json:"page_num"`  //页数
 	PageSize int    `json:"page_size"` //每页条数
-
 }
 
 type ServiceListItemOutput struct {

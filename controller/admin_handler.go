@@ -28,7 +28,7 @@ func AdminRegisterHandler(c *gin.Context) {
 	p := new(model.Admin)
 	//并不会识别输入是否符合json tag,要做参数校验
 	//哪怕有一个输入字段是正确的,都能绑定,可以定义一个model,手动绑定
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "客户端输入的请求不正确",
@@ -83,7 +83,7 @@ func AdminRegisterHandler(c *gin.Context) {
 func AdminLoginHandler(c *gin.Context) {
 	//res := new(Response)
 	p := new(model.Admin) //结构体指针
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		//res = &Response{
 		//	Code: 2000,
 		//	Msg:  "客户端输入的请求不正确",
@@ -163,7 +163,7 @@ func AdminLoginHandler(c *gin.Context) {
 
 func ChangePwdHandler(c *gin.Context) {
 	p := new(model.Admin)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入不正确",

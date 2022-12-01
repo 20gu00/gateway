@@ -11,7 +11,7 @@ import (
 
 func ServiceAddTcpHandler(c *gin.Context) {
 	p := new(model.ServiceAddTcpInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -130,7 +130,7 @@ func ServiceAddTcpHandler(c *gin.Context) {
 
 func ServiceUpdateTcpHandler(c *gin.Context) {
 	p := new(model.ServiceUpdateTcpInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",

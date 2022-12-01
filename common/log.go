@@ -48,7 +48,8 @@ func InitLogger() {
 	}
 
 	//默认logrus.TextFormatter{}
-	Logger.SetFormatter(&logrus.JSONFormatter{})
+	//Logger.SetFormatter(&logrus.JSONFormatter{})
+	Logger.SetFormatter(&logrus.TextFormatter{})
 
 	Logger.SetLevel(logLevel)
 

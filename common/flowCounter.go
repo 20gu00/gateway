@@ -12,7 +12,7 @@ import (
 
 var (
 	FlowCounterHandler *FlowCounter
-	TimeLocation       *time.Location
+	TimeLocation, _    = time.LoadLocation("Asia/Shanghai")
 )
 
 //单例化flow counter流量统计器,和loadbalancer类似,每个服务一个流量统计器
@@ -44,7 +44,7 @@ func (counter *FlowCounter) GetCounter(serverName string) (*FlowCountService, er
 
 	//实际的创建统计器的逻辑
 	//如果没有统计该服务的流量信息,就创建流量统计功能,服务流量统计器的appid就是流量统计前缀+服务名
-	newCounter := NewFlowCountService(serverName, 1*time.Second)
+	newCounter := NewFlowCountService(serverName, 1*time.Second) //设置每秒统计一次,也就是每秒向redis写入(操作)一次数据
 	//将新的流量统计器信息添加到流量统计器的切片和map中
 	counter.RedisFlowCountSlice = append(counter.RedisFlowCountSlice, newCounter)
 	counter.Locker.Lock()
@@ -81,7 +81,7 @@ func NewFlowCountService(appID string, interval time.Duration) *FlowCountService
 		ticker := time.NewTicker(interval) //会根据时间间隔创建一个ticker,Ticker是一个周期触发定时的计时器，它会按照一个时间间隔往channel发送系统当前时间，而channel的接收者可以以固定的时间间隔从channel中读取事件。
 		//不断循环
 		for {
-			<-ticker.C                                               //从周期性的计时器的channel中读取,非缓存通道,阻塞,监听事件
+			<-ticker.C                                               //阻塞一定的时间                                            //从周期性的计时器的channel中读取,非缓存通道,阻塞,监听事件
 			tickerCount := atomic.LoadInt64(&reqCounter.TickerCount) //(同步,原子操作,实现数据的正确)获取数据,原子加载&reqCounter.TickerCount这个内存地址
 			atomic.StoreInt64(&reqCounter.TickerCount, 0)            //重置数据,将val存储到&reqCounter.TickerCount
 
@@ -96,7 +96,7 @@ func NewFlowCountService(appID string, interval time.Duration) *FlowCountService
 				c.Send("INCRBY", dayKey, tickerCount) //写入key vaule,滴答计时器的滴答数目,将 key 中储存的数字加上指定的增量值。 如果key 不存在,那么 key 的值会先被初始化为 0 ,然后再执行 INCRBY 命令
 				c.Send("EXPIRE", dayKey, 86400*2)     //设置key超时时间
 				c.Send("INCRBY", hourKey, tickerCount)
-				c.Send("EXPIRE", hourKey, 86400*2)
+				c.Send("EXPIRE", hourKey, 86400*2) //两天
 			}); err != nil {
 				fmt.Println("RedisConfPipeline,操作redis的操作器报错", err)
 				continue

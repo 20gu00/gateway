@@ -26,7 +26,7 @@
  "rule":"/test/ab",
  "need_https":0,
  "need_strip_uri":0,
- "need_websocket":0,
+ //"need_websocket":0,
  "url_rewrite":"^/test/ab(.*) /test/ba$1",
  "header_transfor":"add k1 v1",
  "open_auth":1,
@@ -48,5 +48,37 @@
  "info":"t",
  "page_num":1,
  "page_size":10
+}
+
+127.0.0.1:8000/service/delete
+{
+    "id":1
+}
+
+127.0.0.1:8000/service/stat
+127.0.0.1:8000/service/detail
+{
+    "id":1
+}
+
+127.0.0.1:8000/service/update_http
+
+
+127.0.0.1:8000/tenant/add
+127.0.0.1:8000/tenant/update
+{
+    "app_id":"90",
+    "name":"tenant1",
+    "secret":"passwd",
+    "white_ips":"192.168.23.232",
+    "qpd":1000,
+    "qps":2
+}
+
+127.0.0.1:8000/tenant/list
+{
+    "info":"90",
+    "page_no":10,
+    "page_size":10
 }
 

@@ -17,7 +17,8 @@ import (
 
 func ServiceListHandler(c *gin.Context) {
 	p := new(model.ServiceListInput)
-	if err := c.ShouldBind(p); err != nil {
+	//ShouldBind有时候板顶后结构体参数依旧为空
+	if err := c.ShouldBindJSON(p); err != nil { //会绑定相应的字段,多余字段不管,如果有不合法输入比如/一般会报错,但是输入不存在的字段不会报错,所以这里的设计并不能在后端很好地实现参数校验,应该额外设计参数校验(没有绑定的字段如果可以为空那么就默认为空)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -54,11 +55,11 @@ func ServiceListHandler(c *gin.Context) {
 			return
 		}
 
-		viper.SetConfigName("base")
+		viper.SetConfigName("general")
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(workDir + "/conf")
 		if err := viper.ReadInConfig(); err != nil {
-			common.Logger.Infof("general配置文件读取失败", err.Error())
+			common.Logger.Infof("general配置文件读取失败(service_list)", err.Error())
 			return
 		}
 		//添加服务时就需要填写这些字段(这里获取通过用户的输入来确定serviceAddr)
@@ -66,7 +67,7 @@ func ServiceListHandler(c *gin.Context) {
 		serviceAddr := "unknwonAddr"
 		//网关ip,集群ip,入口
 		clusterIp := viper.GetString("cluster.cluster_ip")
-		clusterPort := viper.GetString("cluster.cluster_port")
+		clusterPort := viper.GetString("cluster.cluster_port") //网关提供代理服务的端口不是后台管理系统的端口
 		clusterSslPort := viper.GetString("cluster.cluster_ssl_port")
 
 		//类型http,接入方式前缀
@@ -127,7 +128,7 @@ func ServiceListHandler(c *gin.Context) {
 
 func ServiceDeleteHandler(c *gin.Context) {
 	p := new(model.ServiceDeleteInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -166,7 +167,7 @@ func ServiceDeleteHandler(c *gin.Context) {
 
 func ServiceDetailHandler(c *gin.Context) {
 	p := new(model.ServiceDetailInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -207,7 +208,7 @@ func ServiceDetailHandler(c *gin.Context) {
 
 func ServiceStatHandler(c *gin.Context) {
 	p := new(model.ServiceStatInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -276,7 +277,7 @@ func ServiceStatHandler(c *gin.Context) {
 
 func ServiceAddHttpHandler(c *gin.Context) {
 	p := new(model.ServiceAddHttpInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -370,12 +371,12 @@ func ServiceAddHttpHandler(c *gin.Context) {
 	}
 
 	httpDao := &model.Service_http{
-		ServiceId:      int(serviceInfoDao.ID),
-		RuleType:       p.RuleType,
-		Rule:           p.Rule,
-		NeedHttps:      p.NeedHttps,
-		NeedStrip_uri:  p.NeedStripUri,
-		NeedWebsocket:  p.NeedWebsocket,
+		ServiceId:     int(serviceInfoDao.ID),
+		RuleType:      p.RuleType,
+		Rule:          p.Rule,
+		NeedHttps:     p.NeedHttps,
+		NeedStrip_uri: p.NeedStripUri,
+		//NeedWebsocket:  p.NeedWebsocket,
 		UrlRewrite:     p.UrlRewrite,
 		HeaderTransfor: p.HeaderTransfor,
 	}
@@ -437,7 +438,7 @@ func ServiceAddHttpHandler(c *gin.Context) {
 
 func ServiceUpdateHttpHandler(c *gin.Context) {
 	p := new(model.ServiceUpdateHttpInput)
-	if err := c.ShouldBind(p); err != nil {
+	if err := c.ShouldBindJSON(p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": 2000,
 			"msg":  "输入的请求参数不正确",
@@ -499,7 +500,7 @@ func ServiceUpdateHttpHandler(c *gin.Context) {
 	httpRuleDao := serviceDetail.Http
 	httpRuleDao.NeedHttps = p.NeedHttps
 	httpRuleDao.NeedStrip_uri = p.NeedStripUri
-	httpRuleDao.NeedWebsocket = p.NeedWebsocket
+	//httpRuleDao.NeedWebsocket = p.NeedWebsocket
 	httpRuleDao.UrlRewrite = p.UrlRewrite
 	httpRuleDao.HeaderTransfor = p.HeaderTransfor
 	if tx := db.Save(httpRuleDao); tx.Error != nil {

@@ -75,8 +75,8 @@ type TenantUpdateInput struct {
 }
 
 func (t *Tenant) TenantList(tx *gorm.DB, params *TenantListInput) ([]Tenant, int64, error) {
-	var list []Tenant
 	var count int64
+	list := []Tenant{}
 	pageNo := params.PageNo
 	pageSize := params.PageSize
 

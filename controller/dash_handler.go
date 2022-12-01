@@ -48,8 +48,8 @@ func PanelDataHandler(c *gin.Context) {
 		CurrentQPS:      counter.QPS,
 	}
 
-	c.JSON(http.StatusInternalServerError, gin.H{
-		"code": 2003,
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
 		"msg":  "大盘显示服务数目和租户数目和整个网关的qps(当前请求量)和qpd(当日请求量)",
 		"data": out,
 	})

@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/spf13/viper"
 	"os"
@@ -29,8 +28,8 @@ func RedisConfPipeline(pip ...func(c redis.Conn)) error {
 	}
 
 	defer c.Close()
-	res, err := c.Do("ping")
-	fmt.Println(res)
+	//res, err := c.Do("ping")
+	//fmt.Println(res)
 
 	//每一个函数都包含了众多的redis操作
 	for _, f := range pip {

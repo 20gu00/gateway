@@ -38,7 +38,7 @@ func main() {
 	go func() {
 		stop := common.SignalHandler()
 		select {
-		case <-stop:
+		case <-stop: //当通道关闭
 			if *kind == "admin" {
 				router.HttpServerStop()
 				<-time.NewTimer(10 * time.Second).C

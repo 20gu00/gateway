@@ -26,7 +26,7 @@ func InitProxyRouter() *gin.Engine {
 		httpProxyServerMiddleware.HttpHeaderTransferMiddleware(), //header头转换
 		httpProxyServerMiddleware.HttpStripUriMiddleware(),       //strip_uri
 		httpProxyServerMiddleware.HttpUrlRewriteMiddleware(),     //url rewrite
-		httpProxyServerMiddleware.HttpReverseProxyMiddleware(),
+		httpProxyServerMiddleware.HttpReverseProxyMiddleware(),   //代理到实际的服务工作负载
 	)
 	return r
 }

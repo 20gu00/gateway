@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+//每个服务对应一个负载均衡器,单例化
 var LoadBalancerHandler *LoadBalancer
 
 type LoadBalancer struct {

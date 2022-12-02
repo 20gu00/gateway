@@ -43,6 +43,20 @@
  "upstream_idle_timeout":10
 }
 
+{
+ "service_name":"test9",
+ "service_desc":"测试http服务",
+ "rule_type":0,
+ "rule":"/test",
+ "need_https":0,
+ "need_strip_uri":0,
+ "clientip_flow_limit":1,
+ "service_flow_limit":1,
+ "round_type":1,
+ "ip_list":"127.0.0.1:2003,127.0.0.1:2004",
+ "weight_list":"10,100"
+}
+
 127.0.0.1:8000/service/list
 {
  "info":"t",

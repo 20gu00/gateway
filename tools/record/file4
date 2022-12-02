@@ -39,3 +39,6 @@ token或者session任意一种都可以做身份的校验
 https://127.0.0.1:4433/ping
 
 正式的环境需要证书签发机构给我们签发个证书,程序去调用
+
+域名的话需要做好/etc/hosts的解析(网关的host文件)
+比如创建一个service叫test.com,在网关做好host解析,访问test.com:8080

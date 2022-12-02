@@ -105,7 +105,7 @@ func NewFlowCountService(appID string, interval time.Duration) *FlowCountService
 			//从redis中拿出数据,key value
 			totalCount, err := reqCounter.GetDayData(currentTime)
 			if err != nil {
-				fmt.Println("reqCounter请求计数器获取当天数据失败", err)
+				fmt.Println("reqCounter 请求计数器获取当天数据失败", err)
 				continue
 			}
 

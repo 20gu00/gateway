@@ -32,7 +32,7 @@ func NewServiceManager() *ServiceManager {
 	}
 }
 
-//调用这个包时直接初始化
+//调用这个包时直接初始化(只加载一次,如果数据库数据变更,所以设置一定时间重载)
 func init() {
 	ServiceManagerHandler = NewServiceManager()
 }

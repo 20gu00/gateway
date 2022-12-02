@@ -20,6 +20,8 @@ func HttpReverseProxyMiddleware() gin.HandlerFunc {
 
 		serviceDetail := serverInterface.(*model.ServiceDetail)
 
+		//http基于负载均衡器和连接池的代理
+
 		//负载均衡器
 		lb, err := loadBalance.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
 		if err != nil {

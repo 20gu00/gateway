@@ -24,7 +24,7 @@ func RedisConfPipeline(pip ...func(c redis.Conn)) error {
 
 	c, err := redis.Dial("tcp", viper.GetString("redis.proxy_list"))
 	if err != nil {
-		Logger.Infof("连接redis失败")
+		Logger.Infof("建立redis连接失败")
 	}
 
 	defer c.Close()

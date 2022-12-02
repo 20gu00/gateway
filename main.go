@@ -8,6 +8,7 @@ import (
 	"github.com/20gu00/gateway/router"
 	"github.com/20gu00/gateway/router/httpProxyServer"
 	"os"
+	"time"
 )
 
 var (
@@ -35,19 +36,26 @@ func main() {
 	}
 
 	go func() {
-		<-common.QuitSignal()
-		if *kind == "admin" {
-			router.HttpServerStop()
-			os.Exit(0)
-		} else if *kind == "proxy" {
-			httpProxyServer.HttpProxyServerStop()
-			httpProxyServer.HttpsProxyServerStop()
-			os.Exit(0)
-		} else {
-			router.HttpServerStop()
-			httpProxyServer.HttpProxyServerStop()
-			httpProxyServer.HttpsProxyServerStop()
-			os.Exit(0)
+		stop := common.SignalHandler()
+		select {
+		case <-stop:
+			if *kind == "admin" {
+				router.HttpServerStop()
+				<-time.NewTimer(10 * time.Second).C
+				os.Exit(0)
+			} else if *kind == "proxy" {
+				httpProxyServer.HttpProxyServerStop()
+				httpProxyServer.HttpsProxyServerStop()
+				<-time.NewTimer(10 * time.Second).C
+				//<-time.After(10*time.Minute)
+				os.Exit(0)
+			} else {
+				router.HttpServerStop()
+				httpProxyServer.HttpProxyServerStop()
+				httpProxyServer.HttpsProxyServerStop()
+				<-time.NewTimer(10 * time.Second).C
+				os.Exit(0)
+			}
 		}
 	}()
 

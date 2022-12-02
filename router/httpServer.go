@@ -35,7 +35,7 @@ func HttpServerRun() {
 		Handler: r, //gin.Engine
 		Addr:    viper.GetString("http.address"),
 		//time.Duration单位纳秒
-		ReadTimeout:    time.Duration(viper.GetInt("http.read_timeout") * 1000000000),
+		ReadTimeout:    time.Duration(viper.GetInt("http.read_timeout") * 1000000000), //*second
 		WriteTimeout:   time.Duration(viper.GetInt("http.write_timeout") * 1000000000),
 		MaxHeaderBytes: 1 << viper.GetInt("http.max_header_bytes"),
 	}

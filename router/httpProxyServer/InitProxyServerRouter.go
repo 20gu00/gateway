@@ -9,6 +9,9 @@ import (
 
 func InitProxyRouter() *gin.Engine {
 	r := gin.Default()
+	//使用中间件之前
+	//r.GET("ping", controller.TestHandler)
+	router.TestRouter(r)
 	//Group("/")  顺序
 	r.Use(
 		middleware.LogMiddleware(),                               //gin的处理请求的日志也使用logrus
@@ -23,7 +26,7 @@ func InitProxyRouter() *gin.Engine {
 		httpProxyServerMiddleware.HttpHeaderTransferMiddleware(), //header头转换
 		httpProxyServerMiddleware.HttpStripUriMiddleware(),       //strip_uri
 		httpProxyServerMiddleware.HttpUrlRewriteMiddleware(),     //url rewrite
+		httpProxyServerMiddleware.HttpReverseProxyMiddleware(),
 	)
-	router.TestRouter(r)
 	return r
 }

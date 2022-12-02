@@ -3,8 +3,8 @@ package httpProxyServer
 import (
 	"context"
 	"github.com/20gu00/gateway/common"
+	"github.com/20gu00/gateway/common/cert"
 	"github.com/spf13/viper"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -36,8 +36,8 @@ func HttpProxyServerRun() {
 	HttpPorxyServerHandler = &http.Server{
 		Handler:        r, //gin.Engine
 		Addr:           viper.GetString("proxy.http.addr"),
-		ReadTimeout:    time.Duration(viper.GetInt("proxy.http.read_timeout")),
-		WriteTimeout:   time.Duration(viper.GetInt("proxy.http.write_timeout")),
+		ReadTimeout:    time.Duration(viper.GetInt("proxy.http.read_timeout")) * time.Second,
+		WriteTimeout:   time.Duration(viper.GetInt("proxy.http.write_timeout")) * time.Second,
 		MaxHeaderBytes: 1 << viper.GetInt("proxy.http.max_header_bytes"),
 	}
 
@@ -53,9 +53,9 @@ func HttpProxyServerStop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := HttpPorxyServerHandler.Shutdown(ctx); err != nil {
-		log.Fatalf("http代理服务器 HttpProxyServer Stop error:%v\n", err)
+		common.Logger.Infof("http代理服务器 HttpProxyServer Stop error:%v\n", err)
 	}
-	log.Printf("http代理服务器 HttpProxyServer Stop\n")
+	common.Logger.Infof("http代理服务器 HttpProxyServer Stop\n")
 }
 
 func HttpsProxyServerRun() {
@@ -78,14 +78,18 @@ func HttpsProxyServerRun() {
 	HttpsPorxyServerHandler = &http.Server{
 		Handler:        r, //gin.Engine
 		Addr:           viper.GetString("proxy.https.addr"),
-		ReadTimeout:    time.Duration(viper.GetInt("proxy.https.read_timeout")),
-		WriteTimeout:   time.Duration(viper.GetInt("proxy.https.write_timeout")),
+		ReadTimeout:    time.Duration(viper.GetInt("proxy.https.read_timeout")) * time.Second,
+		WriteTimeout:   time.Duration(viper.GetInt("proxy.https.write_timeout")) * time.Second,
 		MaxHeaderBytes: 1 << viper.GetInt("proxy.https.max_header_bytes"),
 	}
 
-	common.Logger.Infof("https 代理服务器 HttpsProxyServerRun:%s\n", viper.GetString("http.address"))
-	if err := HttpsPorxyServerHandler.ListenAndServe(); err != nil {
-		common.Logger.Infof("https 代理服务器 HttpsProxyServerRun:%s\n error:%v\n", viper.GetString("http.address"), err)
+	common.Logger.Infof("https 代理服务器 HttpsProxyServerRun:%s\n", viper.GetString("proxy.https.addr"))
+	//这里提供了程序中的证书和私钥,当然也可以通过flag来生成证书和私钥使用
+	if err := HttpsPorxyServerHandler.ListenAndServeTLS(
+		cert.Path("server.crt"), //./common/cert/server.crt
+		cert.Path("server.key"),
+	); err != nil {
+		common.Logger.Infof("https 代理服务器 HttpsProxyServerRun:%s\n error:%v\n", viper.GetString("proxy.https.addr"), err)
 	}
 }
 
